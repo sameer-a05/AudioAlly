@@ -4,6 +4,7 @@ import AudioEngine from './services/AudioEngine'
 import AudioPlayer from './components/AudioPlayer'
 import MicrophoneRecorder from './components/MicrophoneRecorder'
 import StoryAudioPlayer from './components/StoryAudioPlayer'
+import PdfUploadWithStory from './components/PdfUploadWithStory'
 
 function HomePage() {
   const elevenLabsApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || ''
@@ -80,14 +81,19 @@ function HomePage() {
             Open story player
           </Link>
         </section>
+
+        <PdfUploadWithStory />
       </div>
     </div>
   )
 }
 
+import { useLocation } from 'react-router-dom'
 function StoryRoute() {
   const elevenLabsApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || ''
-  return <StoryAudioPlayer elevenLabsApiKey={elevenLabsApiKey} />
+  const location = useLocation();
+  const story = location.state?.story || null;
+  return <StoryAudioPlayer elevenLabsApiKey={elevenLabsApiKey} story={story} />
 }
 
 export default function App() {

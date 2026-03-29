@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import AudioEngine from '../services/AudioEngine'
 import { SAMPLE_STORY } from '../data/sampleStory'
 
-export default function StoryAudioPlayer({ elevenLabsApiKey }) {
+export default function StoryAudioPlayer({ elevenLabsApiKey, story }) {
   const engine = useMemo(
     () => new AudioEngine(elevenLabsApiKey || ''),
     [elevenLabsApiKey],
@@ -31,13 +31,13 @@ export default function StoryAudioPlayer({ elevenLabsApiKey }) {
     setLastQuestion(null)
     setPhase('playing')
     try {
-      await engine.playStory(SAMPLE_STORY, onQuestionDetected)
+      await engine.playStory(story || SAMPLE_STORY, onQuestionDetected)
       setPhase('done')
     } catch (e) {
       setError(e?.message || String(e))
       setPhase('error')
     }
-  }, [engine, onQuestionDetected])
+  }, [engine, onQuestionDetected, story])
 
   const stop = useCallback(() => {
     try {
@@ -65,9 +65,22 @@ export default function StoryAudioPlayer({ elevenLabsApiKey }) {
       <section className="rounded-2xl border border-violet-500/25 bg-slate-900/80 p-6 shadow-xl shadow-violet-950/40 backdrop-blur-sm">
         <h2 className="mb-2 text-xl font-semibold text-slate-100">Story audio</h2>
         <p className="mb-5 text-sm text-slate-400">
-          Plays <code className="text-violet-300">SAMPLE_STORY</code> with narration and a
-          question pause.
+          {story ? (
+            <>
+              <span className="text-green-300">Generated story loaded!</span>
+            </>
+          ) : (
+            <>
+              Plays <code className="text-violet-300">SAMPLE_STORY</code> with narration and a question pause.
+            </>
+          )}
         </p>
+        {story && (
+          <div className="mb-6 p-4 bg-slate-800 rounded-xl text-slate-200">
+            <h3 className="font-bold mb-2">Generated Story (JSON)</h3>
+            <pre className="whitespace-pre-wrap text-xs max-h-96 overflow-auto">{JSON.stringify(story, null, 2)}</pre>
+          </div>
+        )}
 
         {!elevenLabsApiKey && (
           <p className="mb-4 rounded-lg border border-amber-500/30 bg-amber-950/40 px-3 py-2 text-sm text-amber-100/90">

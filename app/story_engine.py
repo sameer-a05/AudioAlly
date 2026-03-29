@@ -232,27 +232,33 @@ class StoryEngine:
             return await self.expand_topic(request.topic, request.child_age)
 
         if request.document_id:
-            # TODO: Person 3 implements this — fetch extracted text from MongoDB
-            # For now, raise a clear error
+            # Fetch extracted text from MongoDB
             return await self._fetch_document_content(request.document_id)
 
         raise ValueError("Must provide content, topic, or document_id")
 
     async def _fetch_document_content(self, document_id: str) -> str:
         """
-        Fetch extracted text for an uploaded document from Person 3's DB.
-        STUB — Person 3 fills this in once their endpoints are ready.
+        Fetch extracted text for an uploaded document from extracted_texts/{document_id}.txt.
         """
-        # TODO: Replace with actual MongoDB query
-        # from motor.motor_asyncio import AsyncIOMotorClient
-        # doc = await db.documents.find_one({"_id": ObjectId(document_id)})
-        # return doc["extracted_text"]
-        raise NotImplementedError(
-            f"Document fetch not yet implemented. "
-            f"Document ID: {document_id}. "
-            f"Person 3 needs to implement the /api/upload-document endpoint "
-            f"and this method needs to query the 'documents' collection."
-        )
+        import os
+        import logging
+        logger = logging.getLogger("story_engine.fetch_document_content")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        extracted_dir = os.path.join(base_dir, '..', 'extracted_texts')
+        file_path = os.path.join(extracted_dir, f"{document_id}.txt")
+        logger.info(f"Looking for extracted text at {file_path}")
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                text = f.read()
+            logger.info(f"Loaded extracted text for document_id: {document_id}, length={len(text)}")
+            return text
+        except FileNotFoundError:
+            logger.error(f"No extracted text file found for document_id: {document_id}")
+            raise ValueError(f"No extracted text found for document_id: {document_id}")
+        except Exception as e:
+            logger.error(f"Error reading extracted text for document_id {document_id}: {e}")
+            raise ValueError(f"Error reading extracted text for document_id: {document_id}")
 
     def _repair_json(self, text: str) -> str:
         """
