@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react'
+import { useVoice } from '../context/VoiceContext'
 
 const SAMPLE =
   'Hello! This is a sample line from the Audio Ally engine. How does it sound?'
 
 export default function AudioPlayer({ engine, elevenLabsApiKey }) {
+  const { appliedVoice } = useVoice()
   const [audioUrl, setAudioUrl] = useState(null)
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
@@ -12,14 +14,14 @@ export default function AudioPlayer({ engine, elevenLabsApiKey }) {
     setError(null)
     setStatus('generating')
     try {
-      const url = await engine.generateSpeech(SAMPLE, 'narrator')
+      const url = await engine.generateSpeech(SAMPLE, appliedVoice)
       setAudioUrl(url)
       setStatus('ready')
     } catch (e) {
       setError(e?.message || String(e))
       setStatus('error')
     }
-  }, [engine])
+  }, [engine, appliedVoice])
 
   const play = useCallback(async () => {
     if (!audioUrl) return
@@ -55,7 +57,7 @@ export default function AudioPlayer({ engine, elevenLabsApiKey }) {
       </h2>
       <p className="mb-5 text-sm leading-relaxed text-slate-400">
         ElevenLabs TTS via <code className="rounded bg-violet-950/80 px-1.5 py-0.5 text-violet-200">AudioEngine</code>
-        — generate, then play, pause, or resume.
+        — uses the voice you <strong className="text-violet-200">confirmed</strong> in Voice below.
       </p>
 
       {!elevenLabsApiKey && (

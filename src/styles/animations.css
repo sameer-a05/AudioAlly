@@ -1,0 +1,295 @@
+/**
+ * Audio Ally — motion: page transitions, stagger, loading, mic, success
+ */
+
+@keyframes aa-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Alias for globals .aa-page-fade */
+@keyframes aa-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aa-stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aa-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes aa-pulse-ring {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.2;
+  }
+}
+
+@keyframes aa-mic-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(109, 40, 217, 0.45),
+      0 12px 40px rgba(0, 0, 0, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 20px rgba(109, 40, 217, 0),
+      0 16px 48px rgba(109, 40, 217, 0.2);
+  }
+}
+
+@keyframes aa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aa-dots {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes aa-check-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes aa-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes aa-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes aa-confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-12vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(110vh) rotate(640deg);
+  }
+}
+
+@keyframes aa-bounce-check {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  70% {
+    transform: scale(0.96);
+  }
+}
+
+.aa-page-enter {
+  animation: aa-page-in 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.aa-stagger-item {
+  opacity: 0;
+  animation: aa-stagger-in 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+.aa-skeleton {
+  border-radius: var(--aa-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--aa-card) 0%,
+    #334155 50%,
+    var(--aa-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: aa-shimmer 1.4s ease-in-out infinite;
+}
+
+.aa-loading-dots {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.aa-loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--aa-primary);
+  animation: aa-dots 1.2s ease-in-out infinite;
+}
+
+.aa-loading-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.aa-loading-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.aa-mic-pulse-visual {
+  animation: aa-mic-pulse 1.5s ease-in-out infinite;
+}
+
+.aa-check-animate {
+  animation: aa-check-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.aa-bg-animated {
+  background-size: 200% 200%;
+  animation: aa-gradient-shift 18s ease infinite;
+}
+
+.aa-float-slow {
+  animation: aa-float 6s ease-in-out infinite;
+}
+
+@keyframes aa-transcript-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aa-bg-drift {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    filter: hue-rotate(12deg);
+    opacity: 0.95;
+  }
+}
+
+@keyframes aa-wing-wave {
+  0%,
+  100% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(-22deg) translateY(-2px);
+  }
+}
+
+@keyframes aa-mascot-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-12px) scale(1.04);
+  }
+  70% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aa-eye-look {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(3px, -1px);
+  }
+  75% {
+    transform: translate(-2px, 1px);
+  }
+}
+
+@keyframes aa-ring-pulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+@keyframes aa-spectrum-bar {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}

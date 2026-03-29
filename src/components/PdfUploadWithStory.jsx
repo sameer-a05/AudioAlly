@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { uploadPdf } from './api'
 import { useNavigate } from 'react-router-dom'
 
 export default function PdfUploadWithStory() {
@@ -10,51 +11,46 @@ export default function PdfUploadWithStory() {
   const [showGenerate, setShowGenerate] = useState(false)
   const [story, setStory] = useState(null)
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0])
+  const handleFileChange = async (e) => {
+    const selectedFile = e.target.files[0]
+    setFile(selectedFile)
     setFileId(null)
     setShowGenerate(false)
     setStory(null)
-  }
-
-  const handleUpload = async (e) => {
-    e.preventDefault()
-    if (!file) return
-    setUploading(true)
-    setError(null)
-    setShowGenerate(false)
-    setStory(null)
-    try {
-      const formData = new FormData()
-      formData.append('pdf', file)
-      const uploadApi = window.location.port === '5173' ? 'http://localhost:3000' : '';
-      const res = await fetch(`${uploadApi}/api/upload-pdf`, {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await res.json()
-      if (data.fileId) {
-        setFileId(data.fileId)
-        setShowGenerate(true)
-      } else {
-        setError(data.error || 'Upload failed')
+    if (selectedFile) {
+      setUploading(true)
+      setError(null)
+      try {
+        const data = await uploadPdf(selectedFile)
+        const id = data.fileId || data.document_id || data._id
+        if (id) {
+          setFileId(id)
+          // Immediately generate story after upload
+          await handleGenerateStory(id)
+        } else {
+          setError(data.error || 'Upload failed')
+        }
+      } catch (err) {
+        setError(err.message || 'Upload error')
+      } finally {
+        setUploading(false)
       }
-    } catch (err) {
-      setError(err.message || 'Upload error')
-    } finally {
-      setUploading(false)
     }
   }
 
-  const handleGenerateStory = async () => {
+  // Removed handleUpload; upload now happens in handleFileChange
+
+  const handleGenerateStory = async (customFileId) => {
     setError(null)
     setStory(null)
+    const docId = customFileId || fileId
+    if (!docId) return
     try {
       const storyApi = window.location.port === '5173' ? 'http://localhost:8000' : '';
       const res = await fetch(`${storyApi}/api/generate-story`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ document_id: fileId }),
+        body: JSON.stringify({ document_id: docId }),
       })
       const data = await res.json()
       if (data && data.title && data.segments) {
@@ -71,18 +67,10 @@ export default function PdfUploadWithStory() {
   return (
     <section className="rounded-2xl border border-violet-500/25 bg-slate-900/80 p-6 shadow-xl shadow-violet-950/40 backdrop-blur-sm mt-8">
       <h2 className="mb-2 text-xl font-semibold text-slate-100">Upload PDF & Generate Story</h2>
-      <form onSubmit={handleUpload} className="flex flex-col gap-4">
-        <input type="file" accept="application/pdf" onChange={handleFileChange} />
-        <button type="submit" className="rounded bg-violet-600 px-4 py-2 text-white" disabled={uploading}>
-          {uploading ? 'Uploading…' : 'Upload PDF'}
-        </button>
-      </form>
+      <div className="flex flex-col gap-4">
+        <input type="file" accept="application/pdf" onChange={handleFileChange} disabled={uploading} />
+      </div>
       {error && <div className="mt-2 text-red-400">{error}</div>}
-      {showGenerate && (
-        <button onClick={handleGenerateStory} className="mt-4 rounded bg-fuchsia-600 px-4 py-2 text-white">
-          Generate Story
-        </button>
-      )}
       {/* Story display moved to /story route */}
     </section>
   )
