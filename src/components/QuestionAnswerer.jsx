@@ -364,7 +364,7 @@ export default function QuestionAnswerer({
               Click to start
             </button>
             <p className="text-center text-lg text-slate-400">
-              One step at a time — tap the mic when you&apos;re ready.
+              One step at a time. Tap the mic when you&apos;re ready.
             </p>
             {srOk && (
               <button

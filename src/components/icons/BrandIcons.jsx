@@ -1,4 +1,4 @@
-/** Minimal SVG icon set — Audio Ally brand (no emoji) */
+/** Minimal SVG icon set. Audio Ally brand (no emoji) */
 
 export function LogoMark({ className = '', size = 36 }) {
   return (
@@ -160,7 +160,7 @@ export function IconStop({ className = '' }) {
   )
 }
 
-/** Abstract hero art — sound + learning */
+/** Abstract hero art: sound + learning */
 export function HeroIllustration({ className = '', style }) {
   return (
     <svg

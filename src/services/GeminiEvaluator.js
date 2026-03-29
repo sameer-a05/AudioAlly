@@ -3,10 +3,11 @@
  * Uses VITE_GEMINI_API_KEY. In dev, requests go through Vite proxy `/gemini-api` to avoid CORS.
  */
 
-function geminiBaseUrl() {
-  if (import.meta.env.DEV) return '/gemini-api'
-  return 'https://generativelanguage.googleapis.com'
-}
+import {
+  geminiGenerateContentUrl,
+  readGeminiHttpError,
+  singleUserGenerateBody,
+} from '../utils/geminiApi.js'
 
 /**
  * Strip optional markdown code fences from model output.
@@ -129,7 +130,7 @@ Use simple language. Be warm and supportive.`
     }
   }
 
-  const url = `${geminiBaseUrl()}/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`
+  const url = geminiGenerateContentUrl(apiKey)
 
   console.log('💭 Gemini evaluation request for question:', questionSegment?.id)
 
@@ -137,19 +138,17 @@ Use simple language. Be warm and supportive.`
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
+      body: JSON.stringify(
+        singleUserGenerateBody(prompt, {
           temperature: 0.35,
           maxOutputTokens: 1024,
-          responseMimeType: 'application/json',
-        },
-      }),
+        }),
+      ),
     })
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => res.statusText)
-      console.log('❌ Gemini API error:', res.status, errText)
+      const detail = await readGeminiHttpError(res)
+      console.log('❌ Gemini API error:', detail)
       return {
         isCorrect: null,
         confidence: null,
@@ -263,7 +262,7 @@ export async function geminiRespondToText(text, apiKey) {
   }
 
   const prompt = `Respond to this: ${trimmed}`
-  const url = `${geminiBaseUrl()}/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`
+  const url = geminiGenerateContentUrl(apiKey)
 
   console.log('💭 Gemini simple prompt request')
 
@@ -271,18 +270,17 @@ export async function geminiRespondToText(text, apiKey) {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
+      body: JSON.stringify(
+        singleUserGenerateBody(prompt, {
           temperature: 0.7,
           maxOutputTokens: 1024,
-        },
-      }),
+        }),
+      ),
     })
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => res.statusText)
-      console.log('❌ Gemini API error:', res.status, errText)
+      const detail = await readGeminiHttpError(res)
+      console.log('❌ Gemini API error:', detail)
       return { response: '', error: true }
     }
 
@@ -350,7 +348,7 @@ export async function conversateWithGemini(userMessage, systemPrompt, apiKey) {
 
 The student said: ${trimmed}`
 
-  const url = `${geminiBaseUrl()}/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`
+  const url = geminiGenerateContentUrl(key)
 
   console.log('💭 Gemini conversation request')
 
@@ -358,18 +356,17 @@ The student said: ${trimmed}`
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
+      body: JSON.stringify(
+        singleUserGenerateBody(prompt, {
           temperature: 0.75,
           maxOutputTokens: 512,
-        },
-      }),
+        }),
+      ),
     })
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => res.statusText)
-      console.log('❌ Gemini API error:', res.status, errText)
+      const detail = await readGeminiHttpError(res)
+      console.log('❌ Gemini API error:', detail)
       return { response: '', error: true }
     }
 

@@ -261,7 +261,7 @@ async def evaluate_answer(request: EvaluateAnswerRequest, fastapi_request: FastA
     if not request.child_answer_text.strip():
         return EvaluateAnswerResponse(
             result=EvaluationResult.UNCLEAR,
-            encouragement="I didn't hear anything — try tapping the microphone and speaking up!",
+            encouragement="I didn't hear anything. Try tapping the microphone and speaking up!",
             explanation=None,
         )
     try:

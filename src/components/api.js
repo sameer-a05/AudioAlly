@@ -86,7 +86,7 @@ export async function evaluateAnswer(questionSegment, childAnswerText, childAge 
   })
 
   if (!res.ok) {
-    // On any failure, return "unclear" — never punish the child
+    // On any failure, return "unclear". Never punish the child
     return {
       result: 'unclear',
       encouragement: "Hmm, something went wrong on our end. Let's keep going!",

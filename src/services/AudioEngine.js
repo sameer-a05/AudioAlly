@@ -275,7 +275,7 @@ export default class AudioEngine {
     while (currentId && !this._stopRequested) {
       const segment = segmentMap.get(currentId)
       if (!segment) {
-        console.warn(`Segment '${currentId}' not found — ending story`)
+        console.warn(`Segment '${currentId}' not found. Ending story`)
         break
       }
 
@@ -304,7 +304,7 @@ export default class AudioEngine {
 
       // Determine next segment
       if (segment.type === 'question') {
-        // Pause for the question — let the UI handle mic/evaluation
+        // Pause for the question. Let the UI handle mic/evaluation
         if (onQuestion) {
           const result = await onQuestion(segment)
           // result should be 'correct', 'incorrect', or 'unclear'
@@ -316,11 +316,11 @@ export default class AudioEngine {
             currentId = segment.incorrect_next || segment.next || null
           }
         } else {
-          // No question handler — just follow correct_next as default
+          // No question handler. Just follow correct_next as default
           currentId = segment.correct_next || segment.next || null
         }
       } else {
-        // Narration/intro/recap — follow `next`
+        // Narration/intro/recap. Follow `next`
         currentId = segment.next || null
       }
     }

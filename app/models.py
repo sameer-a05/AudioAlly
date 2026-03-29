@@ -1,5 +1,5 @@
 """
-StoryPath Data Models — THE SHARED CONTRACT
+StoryPath Data Models - THE SHARED CONTRACT
 =============================================
 Every team member depends on these schemas.
 DO NOT change these without telling the whole team.

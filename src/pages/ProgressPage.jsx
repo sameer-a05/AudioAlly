@@ -1,9 +1,6 @@
 
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Navigation from '../components/Navigation'
-
-
 export default function ProgressPage() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -31,8 +28,7 @@ export default function ProgressPage() {
   }, [username])
 
   return (
-    <div className="aa-page aa-page-enter">
-      <Navigation />
+    <div className="aa-page aa-page--galaxy aa-page-enter pt-20">
       <div className="aa-container" style={{ paddingTop: 40, paddingBottom: 64, textAlign: 'center' }}>
         <h1 className="aa-display" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', marginBottom: 16 }}>
           My progress

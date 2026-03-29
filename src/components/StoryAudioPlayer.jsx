@@ -169,10 +169,13 @@ export default function StoryAudioPlayer({ elevenLabsApiKey }) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 pb-16">
-      {/* Header */}
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-violet-500/30 pb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-100">Audio Ally</h1>
-        <Link to="/" className="rounded-xl border border-violet-500/40 px-4 py-2 text-sm font-medium text-violet-200 hover:bg-violet-950/60">← Home</Link>
+      <div className="mb-6 flex justify-end">
+        <Link
+          to="/"
+          className="rounded-xl border border-violet-500/40 px-4 py-2 text-sm font-medium text-violet-200 hover:bg-violet-950/60"
+        >
+          ← Home
+        </Link>
       </div>
 
       {/* Step 1: Input */}
@@ -207,7 +210,7 @@ export default function StoryAudioPlayer({ elevenLabsApiKey }) {
               {uploadStatus === 'uploading' && <p className="text-sm text-violet-300">Uploading and extracting text…</p>}
               {uploadStatus?.document_id && (
                 <div className="rounded-lg border border-green-500/30 bg-green-950/30 px-3 py-2 text-sm text-green-200">
-                  ✅ <strong>{uploadStatus.filename}</strong> — {uploadStatus.text_length} characters extracted
+                  ✅ <strong>{uploadStatus.filename}</strong>, {uploadStatus.text_length} characters extracted
                   <p className="mt-1 text-xs text-green-300/70">{uploadStatus.text_preview}</p>
                 </div>
               )}

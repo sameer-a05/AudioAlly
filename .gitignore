@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-# Secrets (Vite reads VITE_* from .env — keep keys out of git)
+# Secrets (Vite reads VITE_* from .env - keep keys out of git)
 .env
 .env.*
 !.env.example
@@ -27,3 +27,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]

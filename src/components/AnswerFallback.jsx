@@ -14,7 +14,7 @@ export default function AnswerFallback({
         📝 Type your answer below
       </h3>
       <p className="mb-4 text-lg leading-relaxed text-slate-300">
-        No problem — type what you would have said out loud.
+        No problem. Type what you would have said out loud.
       </p>
       <textarea
         value={value}

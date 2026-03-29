@@ -24,14 +24,14 @@
       "id": "seg_intro",
       "type": "intro",
       "speaker": "narrator",
-      "text": "Hey there, adventurer! Tonight, we're sneaking onto the docks of Boston Harbor. The year is 1773, and something wild is about to happen. Can you smell the salty ocean air? Good. Stay close — and stay quiet.",
+      "text": "Hey there, adventurer! Tonight, we're sneaking onto the docks of Boston Harbor. The year is 1773, and something wild is about to happen. Can you smell the salty ocean air? Good. Stay close, and stay quiet.",
       "next": "seg_1"
     },
     {
       "id": "seg_1",
       "type": "narration",
       "speaker": "narrator",
-      "text": "Here's the deal. The American colonists — that's us — are fed up. The King of England keeps making us pay taxes on stuff we buy. Tea, paper, glass — you name it. And the worst part? Nobody asked us if we were okay with it.",
+      "text": "Here's the deal. The American colonists (that's us) are fed up. The King of England keeps making us pay taxes on stuff we buy. Tea, paper, glass: you name it. And the worst part? Nobody asked us if we were okay with it.",
       "next": "seg_2"
     },
     {
@@ -45,17 +45,17 @@
       "id": "q_1",
       "type": "question",
       "speaker": "samuel_adams",
-      "question_text": "So tell me — why were the colonists so upset about the taxes? What was the big problem?",
+      "question_text": "So tell me: why were the colonists so upset about the taxes? What was the big problem?",
       "correct_answer_keywords": [
         "no vote", "no say", "unfair", "didn't ask", "no representation",
         "couldn't vote", "no choice", "forced", "without asking",
         "didn't get to decide", "taxation without representation",
         "not fair", "they had no voice", "no input", "ignored"
       ],
-      "acceptable_explanation": "The child understands that the core issue was the colonists had no say or vote in the tax decisions being made for them — it was about representation, not just the money.",
+      "acceptable_explanation": "The child understands that the core issue was the colonists had no say or vote in the tax decisions being made for them. It was about representation, not just the money.",
       "correct_next": "seg_3_correct",
       "incorrect_next": "seg_3_incorrect",
-      "hint_text": "Think about what Samuel just said about the locker rule. The money part is annoying, sure — but what makes it REALLY unfair?",
+      "hint_text": "Think about what Samuel just said about the locker rule. The money part is annoying, sure, but what makes it REALLY unfair?",
       "fallback_choices": [
         "They had no say in the decision",
         "Tea was too expensive",
@@ -66,21 +66,21 @@
       "id": "seg_3_correct",
       "type": "narration",
       "speaker": "samuel_adams",
-      "text": "Exactly right! You've got the mind of a revolutionary! The taxes were bad, but having NO SAY in the rules that affected us — that's what really lit the fire. We called it 'taxation without representation.'",
+      "text": "Exactly right! You've got the mind of a revolutionary! The taxes were bad, but having NO SAY in the rules that affected us. That's what really lit the fire. We called it 'taxation without representation.'",
       "next": "seg_4"
     },
     {
       "id": "seg_3_incorrect",
       "type": "narration",
       "speaker": "samuel_adams",
-      "text": "Good thinking, but here's the real secret — it wasn't just about the money. It was about having NO VOICE. Imagine someone making rules for your life and never once asking what you think. That's 'taxation without representation.'",
+      "text": "Good thinking, but here's the real secret: it wasn't just about the money. It was about having NO VOICE. Imagine someone making rules for your life and never once asking what you think. That's 'taxation without representation.'",
       "next": "seg_4"
     },
     {
       "id": "seg_4",
       "type": "narration",
       "speaker": "narrator",
-      "text": "So on December 16th, 1773, Samuel Adams and about 100 other brave colonists hatched a plan. They dressed up as Mohawk warriors — feathers, face paint, the whole deal — and snuck onto three British ships in the harbor.",
+      "text": "So on December 16th, 1773, Samuel Adams and about 100 other brave colonists hatched a plan. They dressed up as Mohawk warriors with feathers, face paint, the whole deal, and snuck onto three British ships in the harbor.",
       "next": "seg_5"
     },
     {
@@ -101,10 +101,10 @@
         "make people notice", "statement", "prove", "couldn't be ignored",
         "action speaks louder", "show the king", "demonstrate"
       ],
-      "acceptable_explanation": "The child understands that dumping the tea was a dramatic act of protest designed to send a strong, unmissable message — stronger than just quietly refusing to buy tea.",
+      "acceptable_explanation": "The child understands that dumping the tea was a dramatic act of protest designed to send a strong, unmissable message, stronger than just quietly refusing to buy tea.",
       "correct_next": "seg_6_correct",
       "incorrect_next": "seg_6_incorrect",
-      "hint_text": "Think about it like this — if you were upset about an unfair rule at school, would it make a bigger impact to just stay quiet, or to organize all your friends to do something big that everyone would notice?",
+      "hint_text": "Think about it like this: if you were upset about an unfair rule at school, would it make a bigger impact to just stay quiet, or to organize all your friends to do something big that everyone would notice?",
       "fallback_choices": [
         "To send a powerful message that couldn't be ignored",
         "Because they didn't like the taste of tea",
@@ -122,14 +122,14 @@
       "id": "seg_6_incorrect",
       "type": "narration",
       "speaker": "narrator",
-      "text": "Great guess! Here's the thing — just not buying tea would have been too quiet. Nobody would have noticed. But destroying 342 chests of tea in the harbor? That was LOUD. It was a protest that the King couldn't ignore. Sometimes you have to be bold to be heard.",
+      "text": "Great guess! Here's the thing: just not buying tea would have been too quiet. Nobody would have noticed. But destroying 342 chests of tea in the harbor? That was LOUD. It was a protest that the King couldn't ignore. Sometimes you have to be bold to be heard.",
       "next": "seg_recap"
     },
     {
       "id": "seg_recap",
       "type": "recap",
       "speaker": "narrator",
-      "text": "And that, adventurer, is the story of the Boston Tea Party! Tonight you learned that the colonists fought against taxation without representation — having rules made without their voice. And when words weren't enough, they took bold action that changed history. You would have made a great revolutionary. Until next time!",
+      "text": "And that, adventurer, is the story of the Boston Tea Party! Tonight you learned that the colonists fought against taxation without representation: having rules made without their voice. And when words weren't enough, they took bold action that changed history. You would have made a great revolutionary. Until next time!",
       "next": null
     }
   ]

@@ -1,5 +1,5 @@
 /**
- * Illustrated characters for each narrator — consistent kid-friendly vector style.
+ * Illustrated characters for each narrator. Consistent kid-friendly vector style.
  */
 
 export function CharacterFemaleNarrator(props) {

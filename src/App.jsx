@@ -9,11 +9,13 @@ import VoiceSelector from './components/VoiceSelector'
 import { VoiceProvider, useVoice } from './context/VoiceContext'
 import { StorySessionProvider } from './context/StorySessionContext'
 import HomePage from './pages/HomePage'
+import FeaturesPage from './pages/FeaturesPage'
 import VoiceSelectorPage from './pages/VoiceSelectorPage'
 import StoryPlayerPage from './pages/StoryPlayerPage'
 import ResultsPage from './pages/ResultsPage'
 import ProgressPage from './pages/ProgressPage'
 import LoginRegister from './components/LoginRegister'
+import GalaxyAppShell from './components/layout/GalaxyAppShell'
 
 function StoryRoute() {
   const elevenLabsApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || ''
@@ -32,7 +34,7 @@ function DevToolsPage() {
   }, [engine, appliedVoice])
 
   return (
-    <div className="aa-page aa-page-fade">
+    <div className="aa-page aa-page--galaxy aa-page-fade pt-20">
       <div className="aa-container" style={{ paddingTop: 32, paddingBottom: 48 }}>
         <VoiceConversation
           engine={engine}
@@ -74,19 +76,28 @@ export default function App() {
       <VoiceProvider>
         <StorySessionProvider>
           <AuthGate>
-            <div className="aa-body">
-              <Routes>
-                {/* Only show main and other routes if authenticated */}
-                <Route path="/" element={<HomePage />} />
-                <Route path="/voices" element={<VoiceSelectorPage />} />
-                <Route path="/learn" element={<StoryPlayerPage />} />
-                <Route path="/results" element={<ResultsPage />} />
-                <Route path="/progress" element={<ProgressPage />} />
-                <Route path="/story" element={<StoryRoute />} />
-                <Route path="/pdf-test" element={<StoryPlayerPage />} />
-                <Route path="/dev" element={<DevToolsPage />} />
-              </Routes>
-            </div>
+            <GalaxyAppShell>
+              <div className="aa-body">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/features" element={<FeaturesPage />} />
+                  <Route path="/voices" element={<VoiceSelectorPage />} />
+                  <Route path="/learn" element={<StoryPlayerPage />} />
+                  <Route path="/results" element={<ResultsPage />} />
+                  <Route path="/progress" element={<ProgressPage />} />
+                  <Route
+                    path="/story"
+                    element={
+                      <div className="aa-page aa-page--galaxy aa-page-enter pt-20">
+                        <StoryRoute />
+                      </div>
+                    }
+                  />
+                  <Route path="/pdf-test" element={<StoryPlayerPage />} />
+                  <Route path="/dev" element={<DevToolsPage />} />
+                </Routes>
+              </div>
+            </GalaxyAppShell>
           </AuthGate>
         </StorySessionProvider>
       </VoiceProvider>
