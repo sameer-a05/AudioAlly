@@ -53,7 +53,7 @@ Dev-only: `eslint`, TypeScript types for React.
 2. Edit `.env` only if you need API features locally:
    - **`VITE_ELEVENLABS_API_KEY`**: voice previews and ElevenLabs TTS in the learn flow.
    - **`GEMINI_API_KEY`** or **`VITE_GEMINI_API_KEY`**: Gemini-backed PDF story generation and answer evaluation.  
-   - Vite also reads **`VITE_GEMINI_MODEL`** (default `gemini-2.0-flash`); see `vite.config.js` for how `GEMINI_API_KEY` and `VITE_GEMINI_API_KEY` are merged.
+   - Vite also reads **`VITE_GEMINI_MODEL`** (default `gemini-2.5-flash`); see `vite.config.js` for how `GEMINI_API_KEY` and `VITE_GEMINI_API_KEY` are merged.
 
 **UI-only workflow:** You can leave Gemini keys empty, run `npm run dev`, and still use navigation, Features, Voices (without previews if no ElevenLabs key), and static screens. Story generation from PDF requires a working Gemini key and usually the Python API for some flows.
 
