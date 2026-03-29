@@ -1,6 +1,6 @@
 /**
  * Shared Gemini REST (Generative Language API) helpers for the browser.
- * Default model is gemini-2.0-flash. Widely available; override with VITE_GEMINI_MODEL in .env
+ * Default model is gemini-2.5-flash. Widely available; override with VITE_GEMINI_MODEL in .env
  * (e.g. gemini-2.5-flash) if your key supports it.
  */
 
@@ -11,7 +11,7 @@ export function geminiRestBaseUrl() {
 
 export function geminiRestModel() {
   const m = import.meta.env.VITE_GEMINI_MODEL
-  return (typeof m === 'string' && m.trim()) || 'gemini-2.0-flash'
+  return (typeof m === 'string' && m.trim()) || 'gemini-2.5-flash'
 }
 
 export function geminiGenerateContentUrl(apiKey) {

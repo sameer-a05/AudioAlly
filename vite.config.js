@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
   // Prefer GEMINI_API_KEY first so it stays the single source of truth with FastAPI.
   // A stale/expired VITE_GEMINI_API_KEY must NOT override a valid GEMINI_API_KEY (common 400 "expired" confusion).
   const geminiForClient = geminiServer || geminiVite || ''
-  const geminiModel = cleanEnvValue(env.VITE_GEMINI_MODEL) || 'gemini-2.0-flash'
+  const geminiModel = cleanEnvValue(env.VITE_GEMINI_MODEL) || 'gemini-2.5-flash'
 
   return {
     envDir: __dirname,
