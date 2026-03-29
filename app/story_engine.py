@@ -1,21 +1,63 @@
 """
-StoryPath Story Engine — Person 1's Core Logic
-================================================
-Handles:
-  1. Taking educational content → generating interactive stories via Gemini
-  2. Evaluating child answers via Gemini
-  3. Expanding bare topics into educational content via Gemini
+StoryPath Story Engine — with MongoDB Integration
+===================================================
+The _fetch_document_content method now reads from the `documents` collection
+that the Node.js PDF upload server populates.
 """
+
+import glob
+import os
+
+from dotenv import load_dotenv
+
+# `__file__` is `.../files/app/story_engine.py` — project `.env` lives in `files/`, not `app/`.
+_APP_DIR = os.path.dirname(os.path.abspath(__file__))
+_FILES_ROOT = os.path.abspath(os.path.join(_APP_DIR, ".."))
+
+print("DEBUG [story_engine]: os.getcwd() =", os.getcwd())
+print("DEBUG [story_engine]: __file__ =", __file__)
+print("DEBUG [story_engine]: _FILES_ROOT =", _FILES_ROOT)
+try:
+    print("DEBUG [story_engine]: listdir(_FILES_ROOT) =", os.listdir(_FILES_ROOT))
+except OSError as e:
+    print("DEBUG [story_engine]: listdir(_FILES_ROOT) failed:", e)
+print(
+    "DEBUG [story_engine]: glob .env* in _FILES_ROOT =",
+    glob.glob(os.path.join(_FILES_ROOT, ".env*")),
+)
+
+# Explicit path: `files/.env` (using `dirname(__file__)+'.env'` would wrongly mean `app/.env`).
+_ENV_PATH = os.path.join(_FILES_ROOT, ".env")
+print(
+    "DEBUG [story_engine]: load_dotenv explicit path =",
+    os.path.abspath(_ENV_PATH),
+    "(exists:",
+    os.path.isfile(_ENV_PATH),
+    ")",
+)
+load_dotenv(_ENV_PATH)
+load_dotenv(os.path.join(os.path.dirname(_FILES_ROOT), ".env"))
+load_dotenv()
+
+_m = os.getenv("MONGODB_URI")
+if _m:
+    print(f"DEBUG [story_engine]: MONGODB_URI found: {_m[:15]}...")
+else:
+    print("DEBUG [story_engine]: MONGODB_URI found: <None> (check filename is `.env` not `.env.txt`)")
 
 import asyncio
 import json
 import logging
+import os
 import re
-import time
 from typing import Optional
 
+import certifi
 import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
+from pymongo import MongoClient
+from bson import ObjectId
+from bson.errors import InvalidId
 
 from app.models import (
     GeneratedStory,
@@ -23,7 +65,6 @@ from app.models import (
     EvaluateAnswerRequest,
     EvaluateAnswerResponse,
     EvaluationResult,
-    StorySegment,
 )
 from app.prompts.story_prompts import (
     get_story_generation_prompt,
@@ -34,43 +75,80 @@ from app.prompts.story_prompts import (
 logger = logging.getLogger(__name__)
 
 
-class StoryEngine:
-    """
-    The brain of StoryPath. Takes educational content and produces
-    interactive audio story structures.
-    """
+# ─── Shared MongoDB connection ───────────────────────────────────────────────
 
+_mongo_client: Optional[MongoClient] = None
+
+
+def _mask_mongodb_uri(uri: str) -> str:
+    """Redact credentials for logs (never print full Atlas passwords)."""
+    if not uri or "@" not in uri:
+        return (uri[:24] + "…") if uri and len(uri) > 24 else (uri or "(empty)")
+    try:
+        scheme, rest = uri.split("://", 1)
+        hostpart = rest.rsplit("@", 1)[-1]
+        return f"{scheme}://***:***@{hostpart}"
+    except Exception:
+        return "***"
+
+
+def get_mongo_db():
+    """
+    Return the shared pymongo database handle.
+    Uses MONGODB_URI and MONGODB_DB (default ``audioally``) — same as ``pdf_upload_server.js``.
+    """
+    global _mongo_client
+    db_name = os.getenv("MONGODB_DB", "audioally")
+
+    if _mongo_client is None:
+        uri = os.getenv("MONGODB_URI")
+        if not uri:
+            raise RuntimeError(
+                "MONGODB_URI not set. Add it to .env — must match the Node server's connection."
+            )
+        masked = _mask_mongodb_uri(uri.strip())
+        logger.info("MongoDB: connecting (db=%s, uri=%s)", db_name, masked)
+        try:
+            _mongo_client = MongoClient(
+                uri.strip(),
+                tlsCAFile=certifi.where(),
+                serverSelectionTimeoutMS=15_000,
+                connectTimeoutMS=15_000,
+            )
+            _mongo_client.admin.command("ping")
+            logger.info("MongoDB: ping OK (db=%s)", db_name)
+        except Exception as e:
+            _mongo_client = None
+            logger.error(
+                "MongoDB: connection failed (db=%s, uri=%s): %s",
+                db_name,
+                masked,
+                e,
+            )
+            raise RuntimeError(
+                f"MongoDB connection failed for database '{db_name}'. "
+                f"Check MONGODB_URI, IP allowlist, and that MONGODB_DB matches the Node PDF server. "
+                f"Attempted URI (masked): {masked}"
+            ) from e
+
+    return _mongo_client[db_name]
+
+
+class StoryEngine:
     def __init__(self, gemini_api_key: str):
         genai.configure(api_key=gemini_api_key)
-        # Use Gemini 2.5 Flash — fast, cheap, great for structured generation
-        # gemini-2.0-flash is deprecated for new users as of March 2026
         self.model = genai.GenerativeModel("gemini-2.5-flash")
-        # Separate model config for evaluation (needs to be fast)
         self.eval_model = genai.GenerativeModel("gemini-2.5-flash")
 
+    # ─── Public API ──────────────────────────────────────────────────────
+
     async def generate_story(self, request: GenerateStoryRequest) -> GeneratedStory:
-        """
-        Main entry point. Takes a GenerateStoryRequest and returns a complete
-        GeneratedStory ready for the voice engine.
-
-        Flow:
-          1. Resolve content (from raw text, topic expansion, or document)
-          2. Generate story structure via Gemini
-          3. Validate and return
-        """
-
-        # Step 1: Get the educational content
         content = await self._resolve_content(request)
 
         if not content or len(content.strip()) < 20:
-            raise ValueError(
-                "Could not extract enough educational content. "
-                "Provide text, a topic, or a valid document_id."
-            )
+            raise ValueError("Not enough educational content to generate a story.")
 
-        # Step 2: Generate the story
         learning_needs = [need.value for need in request.learning_needs]
-
         system_prompt, user_prompt = get_story_generation_prompt(
             content=content,
             child_age=request.child_age,
@@ -80,22 +158,17 @@ class StoryEngine:
 
         logger.info(f"Generating story for age={request.child_age}, needs={learning_needs}")
 
-        # Retry up to 3 times — Gemini sometimes returns broken JSON
         max_retries = 3
         last_error = None
 
         for attempt in range(max_retries):
-            # Lower temperature on retries for more predictable JSON
             temp = max(0.4, 0.8 - (attempt * 0.2))
-
             if attempt > 0:
                 logger.info(f"Retry {attempt}/{max_retries - 1}, temp={temp}")
 
             response = await self._call_gemini(
                 self.model,
-                [
-                    {"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}
-                ],
+                [{"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}],
                 generation_config=genai.GenerationConfig(
                     temperature=temp,
                     top_p=0.95,
@@ -105,39 +178,19 @@ class StoryEngine:
             )
 
             try:
-                # Step 3: Parse and validate
                 story = self._parse_story_response(response.text)
-
-                # Step 4: Validate story graph integrity
                 self._validate_story_graph(story)
-
-                logger.info(
-                    f"Generated story '{story.title}' with {len(story.segments)} segments"
-                    f" (attempt {attempt + 1})"
-                )
+                logger.info(f"Generated '{story.title}' — {len(story.segments)} segments (attempt {attempt + 1})")
                 return story
-
             except (ValueError, json.JSONDecodeError) as e:
                 last_error = e
                 logger.warning(f"Attempt {attempt + 1} failed: {e}")
                 continue
 
-        # All retries exhausted
-        raise ValueError(
-            f"Story generation failed after {max_retries} attempts. "
-            f"Last error: {last_error}"
-        )
+        raise ValueError(f"Story generation failed after {max_retries} attempts. Last error: {last_error}")
 
-    async def evaluate_answer(
-        self, request: EvaluateAnswerRequest
-    ) -> EvaluateAnswerResponse:
-        """
-        Evaluate a child's spoken answer against a question segment.
-        Designed to be GENEROUS — we'd rather false-positive than crush a kid's spirit.
-        """
-
+    async def evaluate_answer(self, request: EvaluateAnswerRequest) -> EvaluateAnswerResponse:
         learning_needs = [need.value for need in request.learning_needs]
-
         system_prompt, user_prompt = get_answer_evaluation_prompt(
             question_text=request.question_segment.question_text,
             acceptable_explanation=request.question_segment.acceptable_explanation,
@@ -149,226 +202,149 @@ class StoryEngine:
 
         response = await self._call_gemini(
             self.eval_model,
-            [
-                {"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}
-            ],
+            [{"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}],
             generation_config=genai.GenerationConfig(
                 temperature=0.3,
                 max_output_tokens=512,
                 response_mime_type="application/json",
             ),
         )
-
         return self._parse_evaluation_response(response.text, request)
 
     async def expand_topic(self, topic: str, child_age: int) -> str:
-        """
-        Takes a bare topic string like "The American Revolution" and
-        generates educational content that the story generator can use.
-        """
-
         system_prompt, user_prompt = get_topic_expansion_prompt(topic, child_age)
-
         response = await self._call_gemini(
             self.model,
-            [
-                {"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}
-            ],
-            generation_config=genai.GenerationConfig(
-                temperature=0.5,
-                max_output_tokens=1024,
-            ),
+            [{"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}],
+            generation_config=genai.GenerationConfig(temperature=0.5, max_output_tokens=1024),
         )
-
         return response.text
 
-    # ─── Private Helpers ─────────────────────────────────────────────────
+    # ─── Private: Gemini call wrapper ────────────────────────────────────
 
     async def _call_gemini(self, model, contents, generation_config, max_rate_retries=3):
-        """
-        Wrapper around model.generate_content that handles rate limiting.
-        Automatically waits and retries on 429 ResourceExhausted errors.
-        """
         for i in range(max_rate_retries):
             try:
-                return model.generate_content(
-                    contents, generation_config=generation_config
-                )
+                return model.generate_content(contents, generation_config=generation_config)
             except google_exceptions.ResourceExhausted as e:
-                # Extract wait time from error if available, default to 20s
                 wait_time = 20
-                error_msg = str(e)
-                # Try to parse "retry in X.XXXs" from the error
-                match = re.search(r'retry in (\d+\.?\d*)', error_msg, re.IGNORECASE)
+                match = re.search(r'retry in (\d+\.?\d*)', str(e), re.IGNORECASE)
                 if match:
-                    wait_time = float(match.group(1)) + 1  # Add 1s buffer
-
+                    wait_time = float(match.group(1)) + 1
                 if i < max_rate_retries - 1:
-                    logger.warning(
-                        f"Rate limited by Gemini. Waiting {wait_time:.0f}s "
-                        f"(attempt {i + 1}/{max_rate_retries})..."
-                    )
+                    logger.warning(f"Rate limited. Waiting {wait_time:.0f}s ({i + 1}/{max_rate_retries})")
                     await asyncio.sleep(wait_time)
                 else:
-                    raise ValueError(
-                        f"Gemini rate limit exceeded after {max_rate_retries} waits. "
-                        f"You're on the free tier — either wait a minute, get a new API key, "
-                        f"or enable billing at https://aistudio.google.com/apikey"
-                    ) from e
+                    raise ValueError(f"Gemini rate limit exceeded after {max_rate_retries} waits.") from e
+
+    # ─── Private: Content resolution ─────────────────────────────────────
 
     async def _resolve_content(self, request: GenerateStoryRequest) -> str:
-        """
-        Determine where the educational content comes from:
-        1. Direct text content (highest priority)
-        2. Topic string (expand via Gemini)
-        3. Document ID (fetch from Person 3's DB — stubbed for now)
-        """
-
         if request.content:
             return request.content
-
         if request.topic:
             logger.info(f"Expanding topic: {request.topic}")
             return await self.expand_topic(request.topic, request.child_age)
-
         if request.document_id:
-            # TODO: Person 3 implements this — fetch extracted text from MongoDB
-            # For now, raise a clear error
             return await self._fetch_document_content(request.document_id)
-
         raise ValueError("Must provide content, topic, or document_id")
 
     async def _fetch_document_content(self, document_id: str) -> str:
         """
-        Fetch extracted text for an uploaded document from Person 3's DB.
-        STUB — Person 3 fills this in once their endpoints are ready.
+        Fetch extracted text from MongoDB `documents` collection.
+        This collection is populated by the Node.js PDF upload server.
+        ``document_id`` must be the hex string from Node (``insertedId.toString()``), valid for ``ObjectId``.
         """
-        # TODO: Replace with actual MongoDB query
-        # from motor.motor_asyncio import AsyncIOMotorClient
-        # doc = await db.documents.find_one({"_id": ObjectId(document_id)})
-        # return doc["extracted_text"]
-        raise NotImplementedError(
-            f"Document fetch not yet implemented. "
-            f"Document ID: {document_id}. "
-            f"Person 3 needs to implement the /api/upload-document endpoint "
-            f"and this method needs to query the 'documents' collection."
-        )
+        raw = (document_id or "").strip()
+        if not raw:
+            raise ValueError("document_id is empty.")
+
+        try:
+            oid = ObjectId(raw)
+        except InvalidId as e:
+            raise ValueError(
+                f"Invalid document_id {raw!r}. "
+                "Expected a 24-character hex MongoDB ObjectId string from the PDF upload response."
+            ) from e
+
+        try:
+            db = get_mongo_db()
+        except RuntimeError as e:
+            raise ValueError(str(e)) from e
+
+        doc = db["documents"].find_one({"_id": oid})
+
+        if doc is None:
+            raise ValueError(
+                f"Document '{document_id}' not found. "
+                f"Upload a PDF at http://localhost:3000 first."
+            )
+
+        text = doc.get("extracted_text", "")
+        if not text or len(text.strip()) < 20:
+            raise ValueError(
+                f"Document '{document_id}' ({doc.get('filename', '?')}) "
+                f"has no extractable text. The PDF might be scanned/image-only."
+            )
+
+        logger.info(f"Fetched document '{doc.get('filename')}': {len(text)} chars")
+        return text
+
+    # ─── Private: JSON parsing ───────────────────────────────────────────
 
     def _repair_json(self, text: str) -> str:
-        """
-        Attempt to fix common JSON issues from Gemini:
-        - Trailing commas before } or ]
-        - Single quotes instead of double quotes (outside of values)
-        - Truncated JSON (try to close open brackets)
-        - Control characters inside strings
-        - Unescaped newlines in string values
-        """
-
-        # Remove markdown fences
         text = text.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
+        for prefix in ("```json", "```"):
+            if text.startswith(prefix):
+                text = text[len(prefix):]
         if text.endswith("```"):
             text = text[:-3]
         text = text.strip()
-
-        # Remove trailing commas before } or ] (most common Gemini issue)
         text = re.sub(r',\s*([}\]])', r'\1', text)
-
-        # Remove control characters that aren't whitespace
         text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
 
-        # If JSON is truncated (doesn't end with } or ]), try to close it
         if text and text[-1] not in ('}', ']'):
-            # Count open vs close braces/brackets
             open_braces = text.count('{') - text.count('}')
             open_brackets = text.count('[') - text.count(']')
-
-            # Try to find last complete segment and close from there
-            # First, try to find the last complete string value
-            last_quote = text.rfind('"')
-            if last_quote > 0:
-                # Check if we're inside a truncated string
-                # Count quotes — if odd, we have an unclosed string
-                quote_count = text.count('"')
-                if quote_count % 2 == 1:
-                    text = text[:last_quote] + '"'
-
-            # Close brackets and braces
+            quote_count = text.count('"')
+            if quote_count % 2 == 1:
+                last_quote = text.rfind('"')
+                text = text[:last_quote] + '"'
             text += ']' * max(0, open_brackets)
             text += '}' * max(0, open_braces)
-
         return text
 
     def _parse_story_response(self, raw_response: str) -> GeneratedStory:
-        """
-        Parse Gemini's JSON response into our validated model.
-        Tries direct parse first, then applies repairs if needed.
-        """
-
-        text = raw_response.strip()
-
-        # First, try direct parse (fast path)
-        clean = text
-        if clean.startswith("```json"):
-            clean = clean[7:]
-        if clean.startswith("```"):
-            clean = clean[3:]
+        clean = raw_response.strip()
+        for prefix in ("```json", "```"):
+            if clean.startswith(prefix):
+                clean = clean[len(prefix):]
         if clean.endswith("```"):
             clean = clean[:-3]
         clean = clean.strip()
 
         data = None
-
         try:
             data = json.loads(clean)
         except json.JSONDecodeError:
-            # Direct parse failed — try repair
-            logger.info("Direct JSON parse failed, attempting repair...")
+            logger.info("Direct parse failed, attempting repair…")
             repaired = self._repair_json(raw_response)
             try:
                 data = json.loads(repaired)
-                logger.info("JSON repair succeeded!")
+                logger.info("JSON repair succeeded")
             except json.JSONDecodeError as e:
-                # Log the problematic area for debugging
-                error_pos = e.pos if hasattr(e, 'pos') else -1
-                context_start = max(0, error_pos - 80)
-                context_end = min(len(repaired), error_pos + 80)
-                logger.error(
-                    f"JSON repair also failed at position {error_pos}:\n"
-                    f"...{repaired[context_start:context_end]}..."
-                )
-                raise ValueError(
-                    f"Gemini returned invalid JSON that couldn't be auto-repaired. "
-                    f"Error near position {error_pos}: {e}"
-                )
+                raise ValueError(f"Gemini returned invalid JSON: {e}")
 
-        # Validate through Pydantic
         try:
-            story = GeneratedStory(**data)
+            return GeneratedStory(**data)
         except Exception as e:
-            logger.error(f"Gemini JSON didn't match our schema: {e}")
-            logger.error(
-                f"Parsed data keys: {data.keys() if isinstance(data, dict) else 'not a dict'}"
-            )
-            raise ValueError(
-                f"Gemini's output didn't match the expected story structure: {e}"
-            )
+            raise ValueError(f"Gemini output didn't match story schema: {e}")
 
-        return story
-
-    def _parse_evaluation_response(
-        self, raw_response: str, request: EvaluateAnswerRequest
-    ) -> EvaluateAnswerResponse:
-        """Parse the evaluation result from Gemini."""
-
+    def _parse_evaluation_response(self, raw_response: str, request) -> EvaluateAnswerResponse:
         text = raw_response.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
+        for prefix in ("```json", "```"):
+            if text.startswith(prefix):
+                text = text[len(prefix):]
         if text.endswith("```"):
             text = text[:-3]
         text = text.strip()
@@ -376,16 +352,13 @@ class StoryEngine:
         try:
             data = json.loads(text)
         except json.JSONDecodeError:
-            # If parsing fails, default to "unclear" — never punish the child
-            # for our technical failures
-            logger.warning("Failed to parse evaluation response, defaulting to 'unclear'")
+            logger.warning("Eval parse failed → defaulting to 'unclear'")
             return EvaluateAnswerResponse(
                 result=EvaluationResult.UNCLEAR,
-                encouragement="I didn't quite catch that — can you try saying it one more time?",
+                encouragement="I didn't quite catch that — can you try one more time?",
                 explanation=None,
             )
 
-        # Map the result string to our enum, defaulting to UNCLEAR on any weirdness
         result_str = data.get("result", "unclear").lower()
         try:
             result = EvaluationResult(result_str)
@@ -394,81 +367,45 @@ class StoryEngine:
 
         return EvaluateAnswerResponse(
             result=result,
-            encouragement=data.get(
-                "encouragement",
-                "Great effort! Let's keep going!"
-            ),
+            encouragement=data.get("encouragement", "Great effort! Let's keep going!"),
             explanation=data.get("explanation"),
         )
 
-    def _validate_story_graph(self, story: GeneratedStory) -> None:
-        """
-        Verify that the story's segment graph is valid:
-        - first_segment_id points to a real segment
-        - All 'next', 'correct_next', 'incorrect_next' refs point to real segments
-        - All speakers reference voices that exist
-        - No orphaned segments (unreachable from first_segment_id)
-        """
+    # ─── Private: Graph validation ───────────────────────────────────────
 
+    def _validate_story_graph(self, story: GeneratedStory) -> None:
         segment_ids = {seg.id for seg in story.segments}
         voice_keys = set(story.voices.keys())
 
-        # Check first segment exists
         if story.first_segment_id not in segment_ids:
-            raise ValueError(
-                f"first_segment_id '{story.first_segment_id}' "
-                f"doesn't match any segment. Available: {segment_ids}"
-            )
+            raise ValueError(f"first_segment_id '{story.first_segment_id}' not in segments")
 
         for seg in story.segments:
-            # Check speaker exists in voices
             if seg.speaker not in voice_keys:
-                raise ValueError(
-                    f"Segment '{seg.id}' references speaker '{seg.speaker}' "
-                    f"but available voices are: {voice_keys}"
-                )
-
-            # Check next references for narration segments
-            if seg.type in ("narration", "intro") and seg.next:
-                if seg.next not in segment_ids:
-                    raise ValueError(
-                        f"Segment '{seg.id}' points to next='{seg.next}' which doesn't exist"
-                    )
-
-            # Check branch references for question segments
+                raise ValueError(f"Segment '{seg.id}' speaker '{seg.speaker}' not in voices")
+            if seg.type in ("narration", "intro") and seg.next and seg.next not in segment_ids:
+                raise ValueError(f"Segment '{seg.id}' next='{seg.next}' doesn't exist")
             if seg.type == "question":
                 if seg.correct_next and seg.correct_next not in segment_ids:
-                    raise ValueError(
-                        f"Question '{seg.id}' correct_next='{seg.correct_next}' doesn't exist"
-                    )
+                    raise ValueError(f"Question '{seg.id}' correct_next doesn't exist")
                 if seg.incorrect_next and seg.incorrect_next not in segment_ids:
-                    raise ValueError(
-                        f"Question '{seg.id}' incorrect_next='{seg.incorrect_next}' doesn't exist"
-                    )
+                    raise ValueError(f"Question '{seg.id}' incorrect_next doesn't exist")
 
-        # Check for orphaned segments (warning only, don't crash)
+        # Orphan check (warning only)
         reachable = set()
         to_visit = [story.first_segment_id]
         while to_visit:
-            current_id = to_visit.pop()
-            if current_id in reachable:
+            cid = to_visit.pop()
+            if cid in reachable:
                 continue
-            reachable.add(current_id)
-
-            seg = next((s for s in story.segments if s.id == current_id), None)
-            if seg is None:
+            reachable.add(cid)
+            seg = next((s for s in story.segments if s.id == cid), None)
+            if not seg:
                 continue
-
-            if seg.next:
-                to_visit.append(seg.next)
-            if seg.correct_next:
-                to_visit.append(seg.correct_next)
-            if seg.incorrect_next:
-                to_visit.append(seg.incorrect_next)
+            for ref in (seg.next, seg.correct_next, seg.incorrect_next):
+                if ref:
+                    to_visit.append(ref)
 
         orphaned = segment_ids - reachable
         if orphaned:
-            logger.warning(
-                f"Story has {len(orphaned)} unreachable segment(s): {orphaned}. "
-                f"These won't be played but won't cause errors."
-            )
+            logger.warning(f"Unreachable segments: {orphaned}")

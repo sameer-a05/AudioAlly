@@ -13,7 +13,7 @@
     },
     "samuel_adams": {
       "character_name": "Samuel Adams",
-      "description": "Passionate, energetic man in his 50s. Speaks with conviction but also humor. Think of a coach giving a pep talk.",
+      "description": "Passionate, energetic man in his 50s. Speaks with conviction but also humor.",
       "gender": "male",
       "age": "adult"
     }
@@ -52,7 +52,7 @@
         "didn't get to decide", "taxation without representation",
         "not fair", "they had no voice", "no input", "ignored"
       ],
-      "acceptable_explanation": "The child understands that the core issue was the colonists had no say or vote in the tax decisions being made for them — it was about representation, not just the money.",
+      "acceptable_explanation": "The child understands that the core issue was the colonists had no say or vote in the tax decisions being made for them.",
       "correct_next": "seg_3_correct",
       "incorrect_next": "seg_3_incorrect",
       "hint_text": "Think about what Samuel just said about the locker rule. The money part is annoying, sure — but what makes it REALLY unfair?",
@@ -87,49 +87,14 @@
       "id": "seg_5",
       "type": "narration",
       "speaker": "narrator",
-      "text": "Then they grabbed 342 whole chests of tea and dumped every single one into the ocean. Splash after splash after splash. The harbor turned into the world's biggest cup of tea! This was their way of saying: we won't pay your unfair tax.",
-      "next": "q_2"
-    },
-    {
-      "id": "q_2",
-      "type": "question",
-      "speaker": "narrator",
-      "question_text": "Why do you think the colonists chose to dump the tea into the harbor, instead of just refusing to buy it?",
-      "correct_answer_keywords": [
-        "send a message", "protest", "make a point", "show they're serious",
-        "get attention", "bold", "dramatic", "stand up", "fight back",
-        "make people notice", "statement", "prove", "couldn't be ignored",
-        "action speaks louder", "show the king", "demonstrate"
-      ],
-      "acceptable_explanation": "The child understands that dumping the tea was a dramatic act of protest designed to send a strong, unmissable message — stronger than just quietly refusing to buy tea.",
-      "correct_next": "seg_6_correct",
-      "incorrect_next": "seg_6_incorrect",
-      "hint_text": "Think about it like this — if you were upset about an unfair rule at school, would it make a bigger impact to just stay quiet, or to organize all your friends to do something big that everyone would notice?",
-      "fallback_choices": [
-        "To send a powerful message that couldn't be ignored",
-        "Because they didn't like the taste of tea",
-        "Because the ships were blocking the harbor"
-      ]
-    },
-    {
-      "id": "seg_6_correct",
-      "type": "narration",
-      "speaker": "narrator",
-      "text": "You nailed it! Just refusing to buy tea would have been quiet and easy to ignore. But dumping 342 chests into the harbor? That's a MESSAGE. The whole world heard about it. Sometimes standing up for what's right takes a bold move.",
-      "next": "seg_recap"
-    },
-    {
-      "id": "seg_6_incorrect",
-      "type": "narration",
-      "speaker": "narrator",
-      "text": "Great guess! Here's the thing — just not buying tea would have been too quiet. Nobody would have noticed. But destroying 342 chests of tea in the harbor? That was LOUD. It was a protest that the King couldn't ignore. Sometimes you have to be bold to be heard.",
+      "text": "Then they grabbed 342 whole chests of tea and dumped every single one into the ocean. Splash after splash after splash. The harbor turned into the world's biggest cup of tea!",
       "next": "seg_recap"
     },
     {
       "id": "seg_recap",
       "type": "recap",
       "speaker": "narrator",
-      "text": "And that, adventurer, is the story of the Boston Tea Party! Tonight you learned that the colonists fought against taxation without representation — having rules made without their voice. And when words weren't enough, they took bold action that changed history. You would have made a great revolutionary. Until next time!",
+      "text": "And that, adventurer, is the story of the Boston Tea Party! Tonight you learned that the colonists fought against taxation without representation. And when words weren't enough, they took bold action that changed history. You would have made a great revolutionary. Until next time!",
       "next": null
     }
   ]

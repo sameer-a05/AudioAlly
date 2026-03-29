@@ -1,86 +1,46 @@
-import { BrowserRouter, Link, NavLink, Route, Routes } from 'react-router-dom'
-import { useMemo } from 'react'
-import AudioEngine from './services/AudioEngine'
-import AudioPlayer from './components/AudioPlayer'
-import MicrophoneRecorder from './components/MicrophoneRecorder'
+import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import StoryAudioPlayer from './components/StoryAudioPlayer'
 
 function HomePage() {
   const elevenLabsApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || ''
-  const engine = useMemo(() => new AudioEngine(elevenLabsApiKey), [elevenLabsApiKey])
-
-  async function handleTestAudioEngine() {
-    console.log('🎬 Test Audio Engine — start')
-    try {
-      if (!elevenLabsApiKey) {
-        console.log('❌ No VITE_ELEVENLABS_API_KEY in .env')
-        return
-      }
-      console.log('🔑 API key loaded (length):', elevenLabsApiKey.length)
-      console.log('🔊 generateSpeech("Hello world") …')
-      const audioUrl = await engine.generateSpeech('Hello world')
-      console.log('✅ TTS blob URL:', audioUrl)
-      console.log('▶️ playAudio …')
-      await engine.playAudio(audioUrl)
-      console.log('🏁 Playback finished')
-    } catch (e) {
-      console.log('❌ Error:', e?.message || e)
-    }
-  }
-
-  const tabClass = ({ isActive }) =>
-    `rounded-xl px-5 py-2.5 text-base font-semibold transition ${
-      isActive
-        ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/40'
-        : 'border border-slate-700 bg-slate-900/60 text-slate-300 hover:border-violet-500/40 hover:text-violet-100'
-    }`
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 pb-20">
-      <header className="mb-10 border-b border-violet-500/25 pb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight text-slate-100 md:text-5xl">
-          Audio Ally
-        </h1>
-        <p className="mb-8 max-w-xl text-lg leading-relaxed text-slate-400">
-          Educational story audio: ElevenLabs TTS, playback controls, mic + speech recognition,
-          and story routes.
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <header className="mb-10 text-center">
+        <h1 className="mb-3 text-5xl font-bold tracking-tight text-slate-100">⚡ Audio Ally</h1>
+        <p className="mx-auto max-w-lg text-lg text-slate-400">
+          Turn any school topic into a personalized, interactive audio adventure.
+          Upload a PDF or type a topic — AI does the rest.
         </p>
-
-        <nav className="mb-6 flex flex-wrap gap-3" aria-label="Main">
-          <NavLink to="/" end className={tabClass}>
-            Home
-          </NavLink>
-          <NavLink to="/story" className={tabClass}>
-            Story player
-          </NavLink>
-        </nav>
-
-        <button
-          type="button"
-          onClick={handleTestAudioEngine}
-          className="rounded-xl bg-fuchsia-600 px-6 py-3.5 text-lg font-semibold text-white shadow-lg shadow-fuchsia-950/50 transition hover:bg-fuchsia-500"
-        >
-          Test Audio Engine
-        </button>
       </header>
 
-      <div className="flex flex-col gap-8">
-        <AudioPlayer engine={engine} elevenLabsApiKey={elevenLabsApiKey} />
-        <MicrophoneRecorder />
-
-        <section className="rounded-2xl border border-violet-500/25 bg-slate-900/80 p-6 shadow-xl shadow-violet-950/40 backdrop-blur-sm">
-          <h2 className="mb-2 text-xl font-semibold text-slate-100">Story route</h2>
-          <p className="mb-5 text-sm leading-relaxed text-slate-400">
-            Open the full story player with sample segments and question pauses.
-          </p>
-          <Link
-            to="/story"
-            className="inline-flex rounded-xl bg-violet-600 px-6 py-3.5 text-lg font-semibold text-white shadow-lg shadow-violet-900/50 transition hover:bg-violet-500"
-          >
-            Open story player
-          </Link>
-        </section>
+      <div className="mb-8 flex justify-center gap-3">
+        <NavLink to="/story"
+          className="rounded-xl bg-violet-600 px-8 py-4 text-xl font-bold text-white shadow-lg shadow-violet-900/50 transition hover:bg-violet-500 hover:shadow-xl">
+          🎧 Start Learning
+        </NavLink>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          ['📄', 'Upload a PDF', 'Drop in a boring textbook chapter and watch it transform.'],
+          ['🎤', 'Voice Answers', 'Kids answer questions by speaking — no typing needed.'],
+          ['🌿', 'Adaptive', 'Tailored for ADHD, dyslexia, and ESL learners.'],
+        ].map(([icon, title, desc]) => (
+          <div key={title} className="rounded-2xl border border-violet-500/20 bg-slate-900/70 p-5">
+            <p className="mb-2 text-2xl">{icon}</p>
+            <h3 className="mb-1 font-semibold text-slate-100">{title}</h3>
+            <p className="text-sm text-slate-400">{desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {!elevenLabsApiKey && (
+        <p className="mt-8 rounded-lg border border-amber-500/30 bg-amber-950/40 px-4 py-3 text-center text-sm text-amber-100/90">
+          Set <code className="text-amber-200">VITE_ELEVENLABS_API_KEY</code> in your{' '}
+          <code className="text-amber-200">.env</code> file to enable voice.
+        </p>
+      )}
     </div>
   )
 }

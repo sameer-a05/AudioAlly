@@ -1,129 +1,137 @@
-# StoryPath — Person 1: Story Engine
+# ⚡ Audio Ally — Interactive Audio Tutor
 
-## What This Does
-Takes educational content (raw text, a topic, or a PDF reference) and generates
-interactive branching audio stories via Gemini. Also evaluates children's spoken
-answers with generous, encouraging scoring.
+Turn any school topic into a personalized, interactive audio adventure for children with ADHD, dyslexia, or ESL learners.
 
-## Quick Start
+## Architecture
 
+```
+┌─────────────────────────────────────────────────────────┐
+│  React Frontend (Vite :5173)                            │
+│  ├── Upload PDF → /node-api/upload-pdf                  │
+│  ├── Generate Story → /api/generate-story               │
+│  ├── Evaluate Answer → /api/evaluate-answer             │
+│  └── TTS Audio → /elevenlabs-api/v1/text-to-speech/...  │
+└────────┬──────────────┬─────────────────┬───────────────┘
+         │              │                 │
+    ┌────▼────┐   ┌─────▼──────┐   ┌──────▼───────┐
+    │ Node.js │   │  FastAPI   │   │ ElevenLabs   │
+    │  :3000  │   │   :8000    │   │   (cloud)    │
+    │ PDF     │   │ Gemini 2.5 │   │   TTS API    │
+    │ upload  │   │ Flash      │   └──────────────┘
+    └────┬────┘   └─────┬──────┘
+         │              │
+         └──────┬───────┘
+          ┌─────▼──────┐
+          │  MongoDB   │
+          │   Atlas    │
+          │ (shared)   │
+          └────────────┘
+```
+
+## Quick Start (3 terminals)
+
+### 1. Install dependencies
 ```bash
-cd storypath
+npm install
 pip install -r requirements.txt
+```
+
+### 2. Set up environment
+```bash
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+# Edit .env and add your keys:
+#   GEMINI_API_KEY        — from https://aistudio.google.com/apikey
+#   VITE_ELEVENLABS_API_KEY — from https://elevenlabs.io
+#   MONGODB_URI           — your Atlas connection string
+```
 
-# Run tests (test 4 works without API key)
-python test_engine.py
+### 3. Start all three servers
 
-# Start the server
+**Terminal 1 — Node PDF server:**
+```bash
+node pdf_upload_server.js
+# → http://localhost:3000
+```
+
+**Terminal 2 — Python Story Engine:**
+```bash
 uvicorn app.main:app --reload --port 8000
+# → http://localhost:8000
 ```
 
-## Endpoints
-
-### `POST /api/generate-story`
-Generate an interactive story from educational content.
-
-```json
-{
-  "topic": "The American Revolution",
-  "child_age": 10,
-  "learning_needs": ["adhd"],
-  "num_questions": 2
-}
+**Terminal 3 — React frontend:**
+```bash
+npm run dev
+# → http://localhost:5173  ← OPEN THIS
 ```
 
-Or with raw content:
-```json
-{
-  "content": "The water cycle describes how water moves...",
-  "child_age": 8,
-  "learning_needs": ["esl"],
-  "num_questions": 1
-}
+### 4. Run integration tests
+```bash
+python test_engine.py
 ```
 
-Returns: `GeneratedStory` JSON (see `examples/boston_tea_party.json` for shape).
+## How It Works
 
-### `POST /api/evaluate-answer`
-Evaluate a child's spoken answer.
+1. **Parent/teacher** types a topic or uploads a PDF of a boring textbook chapter
+2. **Gemini 2.5 Flash** transforms it into an interactive branching story with characters and questions
+3. **ElevenLabs** voices each character with distinct personalities
+4. **Child listens** to the story and answers questions by speaking into the mic
+5. **Gemini evaluates** the answer generously and branches the story accordingly
+6. **Wrong answers** get gentle re-explanations, never punishment
 
-```json
-{
-  "question_segment": {
-    "id": "q_1",
-    "type": "question",
-    "speaker": "samuel_adams",
-    "question_text": "Why were the colonists upset about taxes?",
-    "correct_answer_keywords": ["no vote", "no say", "unfair"],
-    "acceptable_explanation": "Child understands colonists had no representation",
-    "correct_next": "seg_3_correct",
-    "incorrect_next": "seg_3_incorrect",
-    "hint_text": "Think about what makes a rule really unfair.",
-    "fallback_choices": ["They had no say", "Tea was expensive"]
-  },
-  "child_answer_text": "because nobody asked them about it",
-  "child_age": 10,
-  "learning_needs": ["adhd"]
-}
-```
+## Sponsor Integrations
 
-Returns:
-```json
-{
-  "result": "correct",
-  "encouragement": "That's exactly right! You're thinking like a true historian!",
-  "explanation": null
-}
-```
-
-### `GET /api/health`
-Health check.
+| Sponsor | Usage | Prize Target |
+|---------|-------|-------------|
+| **Gemini API** | Story generation + answer evaluation | Best Use of Gemini API |
+| **ElevenLabs** | Multi-character voice synthesis | Best Use of ElevenLabs |
+| **MongoDB Atlas** | Document storage, story persistence | Best Use of MongoDB Atlas |
+| **Vultr** | Deployment hosting (if deployed) | Best Use of Vultr |
 
 ## Project Structure
 
 ```
-storypath/
-├── app/
-│   ├── __init__.py
-│   ├── main.py              ← FastAPI routes (the API)
-│   ├── models.py            ← Pydantic models (THE SHARED CONTRACT)
-│   ├── story_engine.py      ← Core Gemini logic
+audioally/
+├── app/                          # Python (FastAPI)
+│   ├── main.py                   #   API routes
+│   ├── models.py                 #   Pydantic models (SHARED CONTRACT)
+│   ├── story_engine.py           #   Gemini + MongoDB logic
 │   └── prompts/
-│       ├── __init__.py
-│       └── story_prompts.py ← All prompt templates (edit these to tune output)
+│       └── story_prompts.py      #   Prompt templates
+├── src/                          # React frontend
+│   ├── App.jsx                   #   Routing
+│   ├── services/
+│   │   ├── api.js                #   API client (Node + Python)
+│   │   └── AudioEngine.js        #   TTS + playback + mic + branching
+│   └── components/
+│       └── StoryAudioPlayer.jsx  #   Full story experience UI
+├── pdf_upload_server.js          # Node.js PDF upload server
 ├── examples/
-│   └── boston_tea_party.json ← Example story for team development
-├── test_engine.py           ← Test suite
-├── requirements.txt
-├── .env.example
-└── README.md
+│   └── boston_tea_party.json      # Example story for offline dev
+├── vite.config.js                # Proxy config for 3 backends
+├── test_engine.py                # Integration tests
+├── requirements.txt              # Python deps
+├── package.json                  # Node/React deps
+└── .env.example                  # All environment variables
 ```
 
-## Integration Notes for Team
+## Team Responsibilities
 
-### Person 2 (Voice Engine)
-- Consume `GeneratedStory.segments` and `GeneratedStory.voices`
-- Map voice descriptions to ElevenLabs voice IDs
-- Call `POST /api/evaluate-answer` after transcribing child speech
-- Pre-generate both correct/incorrect branch audio while child listens
+| Person | Owns | Key Files |
+|--------|------|-----------|
+| **1 — Story Engine** | Gemini prompts, JSON generation, evaluation | `story_engine.py`, `story_prompts.py` |
+| **2 — Voice Engine** | ElevenLabs TTS, audio playback, mic | `AudioEngine.js` |
+| **3 — Backend/DB** | MongoDB, PDF upload, API server | `pdf_upload_server.js`, `main.py` |
+| **4 — Frontend** | React UI, story player, UX | `StoryAudioPlayer.jsx`, `App.jsx` |
 
-### Person 3 (Backend/DB)
-- Store `GeneratedStory` JSON in MongoDB `stories` collection
-- Implement document upload → text extraction → store in `documents` collection
-- Fill in `story_engine.py → _fetch_document_content()` to query your DB
-- Store evaluation results in `sessions` collection
+## API Endpoints
 
-### Person 4 (Frontend)
-- Call `POST /api/generate-story` from the "Create Story" page
-- Use `examples/boston_tea_party.json` to build UI before API is ready
-- Display `fallback_choices` as button alternatives to voice input
-- `first_segment_id` tells you where to start playback
-- Follow `next` / `correct_next` / `incorrect_next` to traverse the story graph
+### Python (FastAPI :8000)
+- `POST /api/generate-story` — Generate interactive story
+- `POST /api/evaluate-answer` — Evaluate child's spoken answer
+- `GET /api/health` — Health check
 
-## Tuning Tips
-- Story quality off? Edit `app/prompts/story_prompts.py` — that's where all the magic is
-- Gemini returning bad JSON? Bump to `gemini-2.0-pro` in `story_engine.py`
-- Stories too long? Reduce max words in the prompt (currently 75 per segment)
-- Evaluation too strict/loose? Adjust temperature in `evaluate_answer` (currently 0.3)
+### Node.js (:3000)
+- `POST /api/upload-pdf` — Upload PDF + extract text
+- `GET /api/documents` — List uploaded documents
+- `GET /api/documents/:id` — Get document text by ID

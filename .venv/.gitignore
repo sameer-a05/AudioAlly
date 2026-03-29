@@ -1,0 +1,29 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Temp upload dir (Node PDF server)
+uploads/
+
+# Python
+__pycache__
+*.pyc
+.venv
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.sw?
