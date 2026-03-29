@@ -5,13 +5,13 @@
 
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url'
+import {
+  geminiGenerateContentUrl,
+  readGeminiHttpError,
+  singleUserGenerateBody,
+} from '../utils/geminiApi.js'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
-
-function geminiBaseUrl() {
-  if (import.meta.env.DEV) return '/gemini-api'
-  return 'https://generativelanguage.googleapis.com'
-}
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024
 /** Cap pasted source text so the request stays within practical limits */
@@ -130,27 +130,27 @@ Respond with only JSON (use double quotes):
   ]
 }`
 
-  const url = `${geminiBaseUrl()}/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`
+  const url = geminiGenerateContentUrl(key)
 
   console.log('💭 Sending extracted text to Gemini…')
 
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      generationConfig: {
+    body: JSON.stringify(
+      singleUserGenerateBody(userPrompt, {
         temperature: 0.45,
         maxOutputTokens: 4096,
-        responseMimeType: 'application/json',
-      },
-    }),
+      }),
+    ),
   })
 
   if (!res.ok) {
-    const errText = await res.text().catch(() => res.statusText)
-    console.log('❌ Gemini story gen error:', res.status, errText)
-    throw new Error(`Story generation failed (${res.status}). Try again.`)
+    const detail = await readGeminiHttpError(res)
+    console.log('❌ Gemini story gen error:', detail)
+    throw new Error(
+      `Story generation failed: ${detail}. If the key works for your teammate, remove any stale VITE_GEMINI_API_KEY from .env (only GEMINI_API_KEY is needed) and restart npm run dev.`,
+    )
   }
 
   const data = await res.json()

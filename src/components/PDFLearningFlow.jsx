@@ -8,20 +8,19 @@ import { evaluateAnswer } from '../services/GeminiEvaluator'
 import { generateStoryFromPDF } from '../services/GeminiStoryGenerator'
 import { useVoice } from '../context/VoiceContext'
 import MascotCharacter from './MascotCharacter'
-import { IconMic, IconSettings, IconStop } from './icons/BrandIcons'
+import { IconMic, IconStop } from './icons/BrandIcons'
 
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 const ELEVEN_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || ''
 
 export default function PDFLearningFlow() {
   const navigate = useNavigate()
-  const { appliedVoice, setSelectedVoice: setContextVoice } = useVoice()
+  const { appliedVoice } = useVoice()
   const engine = useMemo(() => new AudioEngine(ELEVEN_KEY), [])
 
   useEffect(() => () => engine.cleanup(), [engine])
 
   const [step, setStep] = useState(1)
-  const [selectedVoice, setSelectedVoice] = useState(appliedVoice)
   const [age, setAge] = useState(10)
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -48,22 +47,10 @@ export default function PDFLearningFlow() {
   const currentQ = questions[qIndex]
   const nQuestions = questions.length || 2
 
-  useEffect(() => {
-    setSelectedVoice(appliedVoice)
-  }, [appliedVoice])
-
-  const selectedVoiceLabel = useMemo(
+  const appliedVoiceLabel = useMemo(
     () =>
-      VOICE_OPTIONS.find((o) => o.key === selectedVoice)?.label ?? selectedVoice,
-    [selectedVoice],
-  )
-
-  const onVoiceSelectChange = useCallback(
-    (key) => {
-      setSelectedVoice(key)
-      setContextVoice(key)
-    },
-    [setContextVoice],
+      VOICE_OPTIONS.find((o) => o.key === appliedVoice)?.label ?? appliedVoice,
+    [appliedVoice],
   )
 
   useEffect(() => {
@@ -84,13 +71,13 @@ export default function PDFLearningFlow() {
       setTtsBusy(true)
       try {
         if (qIndex === 0 && story && !storyIntroDoneRef.current) {
-          const urlStory = await engine.generateSpeech(story, selectedVoice)
+          const urlStory = await engine.generateSpeech(story, appliedVoice)
           if (cancelled) return
           await engine.playAudio(urlStory)
           storyIntroDoneRef.current = true
         }
         if (cancelled) return
-        const urlQ = await engine.generateSpeech(qText, selectedVoice)
+        const urlQ = await engine.generateSpeech(qText, appliedVoice)
         if (cancelled) return
         await engine.playAudio(urlQ)
       } catch (e) {
@@ -108,7 +95,7 @@ export default function PDFLearningFlow() {
       cancelled = true
       engine.pauseAudio()
     }
-  }, [step, qIndex, questions, story, engine, selectedVoice])
+  }, [step, qIndex, questions, story, engine, appliedVoice])
 
   useEffect(() => {
     if (!evalResult || !ELEVEN_KEY) {
@@ -126,7 +113,7 @@ export default function PDFLearningFlow() {
       setFeedbackPlaying(true)
       setAllowAnswer(false)
       try {
-        const url = await engine.generateSpeech(text, selectedVoice)
+        const url = await engine.generateSpeech(text, appliedVoice)
         if (cancelled) return
         await engine.playAudio(url)
       } catch (e) {
@@ -144,7 +131,7 @@ export default function PDFLearningFlow() {
       cancelled = true
       engine.pauseAudio()
     }
-  }, [evalResult, engine, selectedVoice])
+  }, [evalResult, engine, appliedVoice])
 
   const handleGenerate = useCallback(async () => {
     if (!file) {
@@ -176,7 +163,7 @@ export default function PDFLearningFlow() {
     setTtsBusy(true)
     setAllowAnswer(false)
     try {
-      const url = await engine.generateSpeech(story, selectedVoice)
+      const url = await engine.generateSpeech(story, appliedVoice)
       await engine.playAudio(url)
     } catch (e) {
       console.log('❌ Read story TTS:', e)
@@ -184,7 +171,7 @@ export default function PDFLearningFlow() {
       setTtsBusy(false)
       setAllowAnswer(true)
     }
-  }, [engine, story, selectedVoice])
+  }, [engine, story, appliedVoice])
 
   const readQuestionAgain = useCallback(async () => {
     if (!currentQ || !ELEVEN_KEY) return
@@ -192,7 +179,7 @@ export default function PDFLearningFlow() {
     setTtsBusy(true)
     setAllowAnswer(false)
     try {
-      const url = await engine.generateSpeech(qText, selectedVoice)
+      const url = await engine.generateSpeech(qText, appliedVoice)
       await engine.playAudio(url)
     } catch (e) {
       console.log('❌ Read question TTS:', e)
@@ -200,7 +187,7 @@ export default function PDFLearningFlow() {
       setTtsBusy(false)
       setAllowAnswer(true)
     }
-  }, [engine, currentQ, selectedVoice])
+  }, [engine, currentQ, appliedVoice])
 
   const hearFeedbackAgain = useCallback(async () => {
     if (!evalResult || !ELEVEN_KEY) return
@@ -211,7 +198,7 @@ export default function PDFLearningFlow() {
     setFeedbackPlaying(true)
     setAllowAnswer(false)
     try {
-      const url = await engine.generateSpeech(text, selectedVoice)
+      const url = await engine.generateSpeech(text, appliedVoice)
       await engine.playAudio(url)
     } catch (e) {
       console.log('❌ Feedback replay:', e)
@@ -219,7 +206,7 @@ export default function PDFLearningFlow() {
       setFeedbackPlaying(false)
       setAllowAnswer(true)
     }
-  }, [engine, evalResult, selectedVoice])
+  }, [engine, evalResult, appliedVoice])
 
   const startMic = useCallback(async () => {
     setLoadError(null)
@@ -300,7 +287,7 @@ export default function PDFLearningFlow() {
           state: {
             rounds: prev,
             title,
-            selectedVoiceLabel,
+            selectedVoiceLabel: appliedVoiceLabel,
             totalQuestions: total,
             correctCount: correct,
           },
@@ -318,7 +305,7 @@ export default function PDFLearningFlow() {
     nQuestions,
     navigate,
     title,
-    selectedVoiceLabel,
+    appliedVoiceLabel,
   ])
 
   const cantStartMic =
@@ -394,30 +381,11 @@ export default function PDFLearningFlow() {
         <section className="aa-card">
           <h2 className="aa-page-title">Upload your PDF</h2>
           <p className="aa-small" style={{ marginBottom: '1.5rem' }}>
-            We&apos;ll turn it into a short story and two questions. Voice:{' '}
-            <strong style={{ color: 'var(--aa-text)' }}>
-              {selectedVoiceLabel}
-            </strong>{' '}
-            — change anytime in the player or on the{' '}
-            <Link to="/voices" className="aa-link">
-              voice page
-            </Link>
-            .
+            We&apos;ll turn it into a short story and two questions. Narrator:{' '}
+            <strong style={{ color: 'var(--aa-text)' }}>{appliedVoiceLabel}</strong>
+            . To choose a different voice, use <strong>Voices</strong> in the top bar
+            before you start.
           </p>
-
-          <label className="aa-label">Narrator voice</label>
-          <select
-            className="aa-select"
-            style={{ marginBottom: '1.25rem', maxWidth: 420 }}
-            value={selectedVoice}
-            onChange={(e) => onVoiceSelectChange(e.target.value)}
-          >
-            {VOICE_OPTIONS.map(({ key, label }) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
 
           <label className="aa-label">PDF file</label>
           <input
@@ -467,37 +435,6 @@ export default function PDFLearningFlow() {
 
       {step === 2 && (
         <div>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: 12,
-              marginBottom: '1rem',
-            }}
-          >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--aa-text-muted)' }}>
-              <IconSettings />
-              <label className="aa-small" style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0 }}>
-                <span style={{ color: 'var(--aa-text-muted)' }}>Voice</span>
-                <select
-                  className="aa-select"
-                  style={{ width: 'auto', minWidth: 200 }}
-                  value={selectedVoice}
-                  onChange={(e) => onVoiceSelectChange(e.target.value)}
-                  aria-label="Narrator voice"
-                >
-                  {VOICE_OPTIONS.map(({ key, label }) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </span>
-          </div>
-
           <section className="aa-card" style={{ marginBottom: '1.5rem' }}>
             <div
               style={{
@@ -688,9 +625,9 @@ export default function PDFLearningFlow() {
               >
                 <p className="aa-card-title" style={{ fontSize: '1.125rem' }}>
                   {evalResult.isCorrect === true
-                    ? 'Great job — you got it!'
+                    ? 'Great job! You got it!'
                     : evalResult.isCorrect === false
-                      ? 'Good try — here is a hint'
+                      ? 'Good try. Here is a hint'
                       : 'Let’s try that again'}
                 </p>
                 <p className="aa-body-text" style={{ marginTop: 8 }}>

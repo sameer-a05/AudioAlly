@@ -18,6 +18,9 @@ export default function Navigation() {
           <Link to="/progress" className="aa-nav-link">
             Progress
           </Link>
+          <Link to="/features" className="aa-nav-link">
+            Features
+          </Link>
           <Link to="/voices" className="aa-nav-link">
             Voices
           </Link>

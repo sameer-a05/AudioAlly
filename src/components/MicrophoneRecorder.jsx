@@ -63,7 +63,7 @@ export default function MicrophoneRecorder() {
   const getEngine = useCallback(() => {
     if (!engineRef.current) {
       engineRef.current = new AudioEngine(apiKey || '')
-      console.log('🎤 AudioEngine ready — API key length:', apiKey.length)
+      console.log('🎤 AudioEngine ready. API key length:', apiKey.length)
     }
     return engineRef.current
   }, [apiKey])
@@ -135,7 +135,7 @@ export default function MicrophoneRecorder() {
     setHeardSpeech(false)
     silenceTimerRef.current = window.setTimeout(async () => {
       if (!isRecordingRef.current || speechDetectedRef.current) return
-      console.log('❌ No speech within 5s — auto-stopping')
+      console.log('❌ No speech within 5s. Auto-stopping')
       setError('No speech detected. Please try again and speak clearly.')
       await stopRef.current()
     }, INITIAL_SILENCE_MS)
@@ -162,7 +162,7 @@ export default function MicrophoneRecorder() {
             speechDetectedRef.current = true
             setHeardSpeech(true)
             clearSilenceTimer()
-            console.log('✅ Speech activity — silence timer cleared (keep listening for full sentences)')
+            console.log('✅ Speech activity. Silence timer cleared (keep listening for full sentences)')
           }
         },
         onPartialTranscript: (combined) => {
@@ -183,7 +183,7 @@ export default function MicrophoneRecorder() {
       setVolumeLevel(0)
 
       await playStartBeep()
-      console.log('✅ Beep played — user can speak')
+      console.log('✅ Beep played. User can speak')
 
       scheduleInitialSilenceWatch()
     } catch (e) {
@@ -210,7 +210,7 @@ export default function MicrophoneRecorder() {
     setError(null)
     setSrNotice(null)
     setPartialText('')
-    console.log('🎤 Try again — restarting')
+    console.log('🎤 Try again. Restarting')
     await start()
   }, [start])
 
@@ -275,7 +275,7 @@ export default function MicrophoneRecorder() {
           <p className="text-xs text-slate-500">
             Input level: {volumeLevel}%
             {!heardSpeech && (
-              <span className="text-violet-400"> — speak within 5 seconds or we&apos;ll stop</span>
+              <span className="text-violet-400">. Speak within 5 seconds or we&apos;ll stop</span>
             )}
           </p>
         </div>

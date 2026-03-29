@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import Navigation from '../components/Navigation'
 import MascotCharacter from '../components/MascotCharacter'
 import { IconCheckCircle, IconXCircle } from '../components/icons/BrandIcons'
 
@@ -55,13 +54,13 @@ export default function ResultsPage() {
   const headline = useMemo(() => {
     if (pct === 100 && totalQuestions > 0) return 'Excellent work! You nailed it.'
     if (pct > 80) return 'Great job! You understood the key ideas.'
-    if (pct >= 40) return 'Nice effort — you’re getting stronger every round.'
+    if (pct >= 40) return 'Nice effort. You’re getting stronger every round.'
     return 'That was a good try. Let’s use the feedback and go again.'
   }, [pct, totalQuestions])
 
   const encourage = useMemo(() => {
     if (pct === 100) return 'Ready for another story when you are.'
-    if (pct >= 40) return 'You’re building real skills—keep the momentum going.'
+    if (pct >= 40) return 'You’re building real skills. Keep the momentum going.'
     return 'Learning sticks when we practice. Another round will feel easier.'
   }, [pct])
 
@@ -72,8 +71,7 @@ export default function ResultsPage() {
   const perfect = pct === 100 && totalQuestions > 0
 
   return (
-    <div className="aa-page aa-page-enter">
-      <Navigation />
+    <div className="aa-page aa-page--galaxy aa-page-enter pt-20">
       <Confetti active={perfect} />
       <div
         className="aa-container"
@@ -175,7 +173,7 @@ export default function ResultsPage() {
                       marginBottom: 8,
                     }}
                   >
-                    {conf != null ? `${conf}%` : '—'}
+                    {conf != null ? `${conf}%` : '-'}
                   </p>
                   {conf != null && (
                     <div className="aa-confidence-bar">
@@ -189,7 +187,7 @@ export default function ResultsPage() {
         </div>
 
         <p className="aa-body-text" style={{ textAlign: 'center', maxWidth: 520, margin: '0 auto 28px' }}>
-          Want to keep going? Try another story—or check your progress anytime.
+          Want to keep going? Try another story, or check your progress anytime.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 460, margin: '0 auto' }}>

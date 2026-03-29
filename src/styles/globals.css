@@ -1,9 +1,9 @@
 /**
- * Audio Ally — kid-friendly + professional design system
+ * Audio Ally - kid-friendly + professional design system
  */
 
 :root {
-  /* Palette — Duolingo × Disney energy */
+  /* Palette - Duolingo × Disney energy */
   --aa-primary: #7c3aed;
   --aa-primary-hover: #6d28d9;
   --aa-primary-mid: #8b5cf6;
@@ -108,10 +108,15 @@ body.aa-body {
   background: #64748b;
 }
 
-/* ——— Page ——— */
+/* --- Page --- */
 .aa-page {
   min-height: 100vh;
   background: var(--aa-bg);
+  color: var(--aa-text-secondary);
+}
+
+.aa-page--galaxy {
+  background: transparent;
   color: var(--aa-text-secondary);
 }
 
@@ -128,7 +133,7 @@ body.aa-body {
   padding-right: var(--aa-gutter);
 }
 
-/* ——— Typography ——— */
+/* --- Typography --- */
 .aa-display {
   font-size: clamp(2.25rem, 5.5vw, 3rem);
   font-weight: 700;
@@ -192,7 +197,7 @@ body.aa-body {
   color: var(--aa-accent);
 }
 
-/* ——— Navigation ——— */
+/* --- Navigation --- */
 .aa-nav {
   position: sticky;
   top: 0;
@@ -257,7 +262,7 @@ body.aa-body {
   background: rgba(148, 163, 184, 0.08);
 }
 
-/* ——— Buttons ——— */
+/* --- Buttons --- */
 .aa-btn {
   display: inline-flex;
   align-items: center;
@@ -351,25 +356,30 @@ body.aa-body {
   border-radius: var(--aa-radius-playful);
 }
 
-/* ——— Cards ——— */
+/* --- Cards (glassmorphism; utilities in index.css: .glass, .card-border, .inner-glow) --- */
 .aa-card {
-  background: linear-gradient(165deg, var(--aa-card) 0%, var(--aa-card-elevated) 100%);
-  border: 1px solid var(--aa-border);
-  border-radius: var(--aa-radius);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
   padding: 24px;
-  box-shadow: var(--aa-shadow);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.4);
   transition:
-    transform var(--aa-transition),
-    box-shadow var(--aa-transition),
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     border-color var(--aa-transition);
 }
 
 .aa-card-interactive:hover {
-  transform: scale(1.02);
-  box-shadow: var(--aa-shadow-primary-lg);
-  border-color: rgba(109, 40, 217, 0.25);
+  transform: translateY(-8px);
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.06),
+    0 25px 50px -12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(130, 0, 219, 0.2);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .aa-card--selected {
@@ -399,7 +409,7 @@ body.aa-body {
   }
 }
 
-/* ——— Hero ——— */
+/* --- Hero --- */
 .aa-hero {
   position: relative;
   overflow: hidden;
@@ -431,7 +441,7 @@ body.aa-body {
   opacity: 0.22;
 }
 
-/* ——— Forms ——— */
+/* --- Forms --- */
 .aa-label {
   display: block;
   font-size: 0.8125rem;
@@ -504,7 +514,7 @@ body.aa-body {
   background: rgba(148, 163, 184, 0.08);
 }
 
-/* ——— Progress ——— */
+/* --- Progress --- */
 .aa-progress-track {
   height: 8px;
   border-radius: 999px;
@@ -520,7 +530,7 @@ body.aa-body {
   transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ——— Score ring ——— */
+/* --- Score ring --- */
 .aa-score-ring {
   width: 168px;
   height: 168px;
@@ -566,7 +576,7 @@ body.aa-body {
   color: var(--aa-text-muted);
 }
 
-/* ——— Mic ——— */
+/* --- Mic --- */
 .aa-mic-btn {
   width: 100px;
   height: 100px;
@@ -621,7 +631,7 @@ body.aa-body {
   animation: aa-mic-pulse 1.5s ease-in-out infinite;
 }
 
-/* ——— Transcript ——— */
+/* --- Transcript --- */
 .aa-transcript {
   border-radius: var(--aa-radius-playful);
   padding: 18px 22px;
@@ -631,11 +641,15 @@ body.aa-body {
   animation: aa-transcript-in 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* ——— Player shell ——— */
+/* --- Player shell --- */
 .aa-player-page {
   position: relative;
   min-height: 100vh;
   background: var(--aa-bg);
+}
+
+.aa-player-page.aa-page--galaxy {
+  background: transparent;
 }
 
 .aa-player-bg {
@@ -656,7 +670,7 @@ body.aa-body {
   z-index: 1;
 }
 
-/* ——— Spinner ——— */
+/* --- Spinner --- */
 .aa-spinner {
   width: 1.5rem;
   height: 1.5rem;
@@ -666,7 +680,7 @@ body.aa-body {
   animation: aa-spin 0.85s linear infinite;
 }
 
-/* ——— Confetti ——— */
+/* --- Confetti --- */
 .aa-confetti {
   position: fixed;
   inset: 0;
@@ -688,7 +702,7 @@ body.aa-body {
   animation: aa-bounce-check 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ——— Feature grid ——— */
+/* --- Feature grid --- */
 .aa-feature-grid {
   display: grid;
   gap: 24px;
@@ -707,7 +721,7 @@ body.aa-body {
   }
 }
 
-/* ——— Voice grid ——— */
+/* --- Voice grid --- */
 .aa-voice-grid {
   display: grid;
   gap: 20px;
@@ -733,9 +747,13 @@ body.aa-body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  border-radius: var(--aa-radius);
+  border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid var(--aa-border);
+  background: rgba(10, 10, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition:
     transform var(--aa-transition),
     box-shadow var(--aa-transition),
@@ -747,19 +765,27 @@ body.aa-body {
   max-width: 260px;
   min-height: 300px;
   margin: 0 auto;
-  border-radius: 20px;
+  border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid var(--aa-border);
+  background: rgba(10, 10, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   flex-direction: column;
   transition:
     transform var(--aa-transition),
-    box-shadow var(--aa-transition);
+    box-shadow var(--aa-transition),
+    border-color var(--aa-transition);
 }
 
 .aa-voice-card-kid:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--aa-shadow-glow);
+  transform: translateY(-6px);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(130, 0, 219, 0.15);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .aa-voice-card-portrait:hover {
@@ -771,7 +797,7 @@ body.aa-body {
   transform: scale(1.02);
 }
 
-/* ——— Top bar (player) ——— */
+/* --- Top bar (player) --- */
 .aa-topbar {
   display: flex;
   flex-wrap: wrap;
@@ -783,7 +809,7 @@ body.aa-body {
   border-bottom: 1px solid rgba(51, 65, 85, 0.5);
 }
 
-/* ——— Result row (responsive) ——— */
+/* --- Result row (responsive) --- */
 .aa-result-grid {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -802,7 +828,7 @@ body.aa-body {
   }
 }
 
-/* ——— Footer ——— */
+/* --- Footer --- */
 .aa-footer {
   border-top: 1px solid var(--aa-border);
   padding: 40px var(--aa-gutter);
@@ -827,7 +853,7 @@ body.aa-body {
   }
 }
 
-/* ——— Kid-friendly hero + mascot + mic rings ——— */
+/* --- Kid-friendly hero + mascot + mic rings --- */
 .aa-hero--kid {
   background: var(--aa-gradient-hero);
   position: relative;

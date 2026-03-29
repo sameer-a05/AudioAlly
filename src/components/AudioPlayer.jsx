@@ -57,7 +57,7 @@ export default function AudioPlayer({ engine, elevenLabsApiKey }) {
       </h2>
       <p className="mb-5 text-sm leading-relaxed text-slate-400">
         ElevenLabs TTS via <code className="rounded bg-violet-950/80 px-1.5 py-0.5 text-violet-200">AudioEngine</code>
-        — uses the voice you <strong className="text-violet-200">confirmed</strong> in Voice below.
+        . Uses the voice you <strong className="text-violet-200">confirmed</strong> in Voice below.
       </p>
 
       {!elevenLabsApiKey && (

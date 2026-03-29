@@ -1,5 +1,5 @@
 /**
- * Large, friendly evaluation display — correct / incorrect / unclear.
+ * Large, friendly evaluation display: correct / incorrect / unclear.
  * ADHD-friendly: one primary action, high contrast, no harsh reds.
  */
 export default function AnswerFeedback({

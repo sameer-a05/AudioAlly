@@ -1,5 +1,5 @@
 /**
- * Ally the owl — friendly guide for Audio Ally.
+ * Ally the owl. Friendly guide for Audio Ally.
  * Moods: default | wave | celebrate | think | encourage
  */
 export default function MascotCharacter({

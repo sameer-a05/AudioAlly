@@ -56,7 +56,7 @@ export default function VoiceConversation({
       setUserMessage(text)
 
       if (!text) {
-        setErrorBanner('Please try again — we did not hear anything.')
+        setErrorBanner('Please try again. We did not hear anything.')
         setStatusLine('🎤 Click to speak')
         return
       }
@@ -82,7 +82,7 @@ export default function VoiceConversation({
       console.log('💭 Gemini reply:', reply.slice(0, 120))
 
       if (!elevenLabsApiKey) {
-        setErrorBanner("Couldn't play response — add VITE_ELEVENLABS_API_KEY.")
+        setErrorBanner("Couldn't play response. Add VITE_ELEVENLABS_API_KEY.")
         setStatusLine('🎤 Click to speak')
         return
       }

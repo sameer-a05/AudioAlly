@@ -36,13 +36,13 @@ async def test_topic_generation():
 
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("SKIP — no GEMINI_API_KEY in .env")
+        print("SKIP: no GEMINI_API_KEY in .env")
         return None
 
     engine = StoryEngine(gemini_api_key=api_key)
 
     request = GenerateStoryRequest(
-        topic="Photosynthesis — how plants make food from sunlight",
+        topic="Photosynthesis: how plants make food from sunlight",
         child_age=9,
         learning_needs=[LearningNeed.ADHD],
         num_questions=1,  # Keep it simple for testing
@@ -77,7 +77,7 @@ async def test_content_generation():
 
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("SKIP — no GEMINI_API_KEY in .env")
+        print("SKIP: no GEMINI_API_KEY in .env")
         return None
 
     engine = StoryEngine(gemini_api_key=api_key)
@@ -88,7 +88,7 @@ async def test_content_generation():
     turning from liquid into water vapor (a gas). This vapor rises into 
     the atmosphere where it cools and condenses into tiny water droplets, 
     forming clouds. When enough droplets gather, they fall as precipitation 
-    — rain, snow, sleet, or hail. This water flows into rivers, lakes, 
+    - rain, snow, sleet, or hail. This water flows into rivers, lakes, 
     and underground aquifers, eventually making its way back to the ocean 
     where the cycle begins again. The water cycle is essential for all 
     life on Earth and has been running for billions of years.
@@ -123,7 +123,7 @@ async def test_answer_evaluation():
 
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("SKIP — no GEMINI_API_KEY in .env")
+        print("SKIP: no GEMINI_API_KEY in .env")
         return
 
     engine = StoryEngine(gemini_api_key=api_key)
@@ -154,7 +154,7 @@ async def test_answer_evaluation():
 
     for answer, expected in test_answers:
         if not answer:
-            print(f"\n  Answer: (empty) — {expected}")
+            print(f"\n  Answer: (empty) - {expected}")
             print(f"  → Skipping empty (handled by API route)")
             continue
 
@@ -202,7 +202,7 @@ async def test_validate_example_story():
 
 
 async def main():
-    print("StoryPath Story Engine — Test Suite")
+    print("StoryPath Story Engine - Test Suite")
     print("=" * 60)
 
     # Test 4 always runs (no API needed)

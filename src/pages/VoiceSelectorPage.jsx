@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AudioEngine, { VOICE_OPTIONS } from '../services/AudioEngine'
 import { useVoice } from '../context/VoiceContext'
-import Navigation from '../components/Navigation'
 import { VoiceCharacterArt } from '../components/voice/VoiceCharacterArt'
 import { IconCheckCircle, IconPause, IconPlay } from '../components/icons/BrandIcons'
 
@@ -11,11 +10,11 @@ const ELEVEN_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || ''
 const VOICE_META = {
   femaleNarrator: {
     gradient: 'linear-gradient(165deg, #db2777 0%, #f472b6 45%, #fce7f3 100%)',
-    blurb: 'Kind and clear—like a favorite teacher.',
+    blurb: 'Kind and clear, like a favorite teacher.',
   },
   maleNarrator: {
     gradient: 'linear-gradient(165deg, #0891b2 0%, #22d3ee 50%, #cffafe 100%)',
-    blurb: 'Friendly mentor energy—steady and supportive.',
+    blurb: 'Friendly mentor energy, steady and supportive.',
   },
   sheriffBilly: {
     gradient: 'linear-gradient(165deg, #78350f 0%, #d97706 55%, #fde68a 100%)',
@@ -27,7 +26,7 @@ const VOICE_META = {
   },
   commanderConner: {
     gradient: 'linear-gradient(165deg, #4c1d95 0%, #7c3aed 45%, #ddd6fe 100%)',
-    blurb: 'Bold and adventurous—mission-ready.',
+    blurb: 'Bold and adventurous, mission-ready.',
   },
   studioStacey: {
     gradient: 'linear-gradient(165deg, #ea580c 0%, #fb923c 55%, #ffedd5 100%)',
@@ -85,8 +84,7 @@ export default function VoiceSelectorPage() {
   )
 
   return (
-    <div className="aa-page aa-page-enter">
-      <Navigation />
+    <div className="aa-page aa-page--galaxy aa-page-enter pt-20">
       <div className="aa-container" style={{ paddingTop: 28, paddingBottom: 72 }}>
         <div style={{ marginBottom: 28 }}>
           <Link to="/" className="aa-back">
@@ -96,7 +94,7 @@ export default function VoiceSelectorPage() {
             Pick your narrator 🎙️
           </h1>
           <p className="aa-body-text" style={{ maxWidth: 560, marginTop: 10 }}>
-            Who&apos;ll be your guide? Tap listen to preview—then choose your favorite.
+            Who&apos;ll be your guide? Tap listen to preview, then choose your favorite.
           </p>
         </div>
 
@@ -171,10 +169,6 @@ export default function VoiceSelectorPage() {
               <div
                 key={key}
                 className={`aa-voice-card-kid ${selected ? 'aa-card--selected' : ''}`}
-                style={{
-                  background: 'var(--aa-card)',
-                  boxShadow: selected ? 'var(--aa-shadow-glow)' : 'var(--aa-shadow)',
-                }}
               >
                 <div
                   style={{

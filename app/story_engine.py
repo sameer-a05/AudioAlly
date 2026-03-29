@@ -1,5 +1,5 @@
 """
-StoryPath Story Engine — with MongoDB Integration
+StoryPath Story Engine - with MongoDB Integration
 ===================================================
 The _fetch_document_content method now reads from the `documents` collection
 that the Node.js PDF upload server populates.
@@ -10,7 +10,7 @@ import os
 
 from dotenv import load_dotenv
 
-# `__file__` is `.../files/app/story_engine.py` — project `.env` lives in `files/`, not `app/`.
+# `__file__` is `.../files/app/story_engine.py`. Project `.env` lives in `files/`, not `app/`.
 _APP_DIR = os.path.dirname(os.path.abspath(__file__))
 _FILES_ROOT = os.path.abspath(os.path.join(_APP_DIR, ".."))
 
@@ -53,7 +53,7 @@ import re
 from typing import Optional
 
 import certifi
-import google.genai as genai
+import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
 from pymongo import MongoClient
 from bson import ObjectId
@@ -95,7 +95,7 @@ def _mask_mongodb_uri(uri: str) -> str:
 def get_mongo_db():
     """
     Return the shared pymongo database handle.
-    Uses MONGODB_URI and MONGODB_DB (default ``audioally``) — same as ``pdf_upload_server.js``.
+    Uses MONGODB_URI and MONGODB_DB (default ``audioally``), same as ``pdf_upload_server.js``.
     """
     global _mongo_client
     db_name = os.getenv("MONGODB_DB", "audioally")
@@ -104,7 +104,7 @@ def get_mongo_db():
         uri = os.getenv("MONGODB_URI")
         if not uri:
             raise RuntimeError(
-                "MONGODB_URI not set. Add it to .env — must match the Node server's connection."
+                "MONGODB_URI not set. Add it to .env. It must match the Node server's connection."
             )
         masked = _mask_mongodb_uri(uri.strip())
         logger.info("MongoDB: connecting (db=%s, uri=%s)", db_name, masked)
@@ -180,7 +180,7 @@ class StoryEngine:
             try:
                 story = self._parse_story_response(response.text)
                 self._validate_story_graph(story)
-                logger.info(f"Generated '{story.title}' — {len(story.segments)} segments (attempt {attempt + 1})")
+                logger.info(f"Generated '{story.title}' - {len(story.segments)} segments (attempt {attempt + 1})")
                 return story
             except (ValueError, json.JSONDecodeError) as e:
                 last_error = e
@@ -355,7 +355,7 @@ class StoryEngine:
             logger.warning("Eval parse failed → defaulting to 'unclear'")
             return EvaluateAnswerResponse(
                 result=EvaluationResult.UNCLEAR,
-                encouragement="I didn't quite catch that — can you try one more time?",
+                encouragement="I didn't quite catch that. Can you try one more time?",
                 explanation=None,
             )
 

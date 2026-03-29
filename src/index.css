@@ -8,3 +8,49 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+  .card-border {
+    @apply border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)];
+  }
+  .gradient-border {
+    @apply border border-transparent;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+  }
+  .inner-glow {
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes pulse-grid {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-pulse-grid {
+  animation: pulse-grid 4s ease-in-out infinite;
+}

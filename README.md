@@ -1,4 +1,13 @@
-# StoryPath — Person 1: Story Engine
+# StoryPath - Person 1: Story Engine
+
+## Frontend (React / Vite / UI)
+
+The **Audio Ally** web app (galaxy background, glass cards, routing, PDF learn UI) is a **Vite + React** project in **this same folder** as this README.
+
+- **Setup, `npm install`, env vars, UI file map, and how to push frontend-only changes:** see **[FRONTEND.md](./FRONTEND.md)**.
+- Copy **`cp .env.example .env`** before local API work; never commit `.env`.
+
+---
 
 ## What This Does
 Takes educational content (raw text, a topic, or a PDF reference) and generates
@@ -123,7 +132,7 @@ storypath/
 - Follow `next` / `correct_next` / `incorrect_next` to traverse the story graph
 
 ## Tuning Tips
-- Story quality off? Edit `app/prompts/story_prompts.py` — that's where all the magic is
+- Story quality off? Edit `app/prompts/story_prompts.py`. That's where all the magic is
 - Gemini returning bad JSON? Bump to `gemini-2.0-pro` in `story_engine.py`
 - Stories too long? Reduce max words in the prompt (currently 75 per segment)
 - Evaluation too strict/loose? Adjust temperature in `evaluate_answer` (currently 0.3)
